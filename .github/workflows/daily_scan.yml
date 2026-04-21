@@ -2,9 +2,8 @@ name: 台股每日篩選
 
 on:
   schedule:
-    # 台灣時間 12:00 = UTC 04:00
-    - cron: "0 4 * * 1-5"    # 週一到週五
-  workflow_dispatch:           # 可在 GitHub 網頁手動觸發
+    - cron: "0 4 * * 1-5"   # 台灣時間 12:00（週一到週五）
+  workflow_dispatch:          # 手動觸發
 
 jobs:
   scan:
@@ -12,19 +11,15 @@ jobs:
     timeout-minutes: 40
 
     steps:
-      - name: Checkout 程式碼
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: 設定 Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: ""              # 關閉自動 pip 快取，避免找不到 requirements.txt 的錯誤
 
-      - name: 安裝套件
-        run: pip install yfinance pandas requests
+      - run: pip install yfinance pandas requests
 
-      - name: 執行篩選程式
+      - name: 執行篩選並發送 Telegram
         env:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID:   ${{ secrets.TG_CHAT_ID }}
