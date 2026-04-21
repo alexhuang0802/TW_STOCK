@@ -15,6 +15,7 @@
 需安裝套件: pip install yfinance pandas requests
 """
 
+import os
 import io
 import requests
 import pandas as pd
@@ -38,7 +39,11 @@ HISTORY_DAYS       = 520    # 下載幾天歷史資料 (需 > 240 交易日, 約
 KOU_DI_FUTURE_DAYS = 5      # 「即將扣低」往後看幾個交易日
 MAX_WORKERS        = 20     # 同時下載執行緒數
 MA_PERIODS         = [5, 10, 20, 60, 120, 240]
-SAVE_CSV           = True   # True = 輸出 CSV 結果檔；False = 只印在終端機
+SAVE_CSV           = False  # 關閉 CSV 輸出，改由 Telegram 傳送文字
+
+# Telegram 設定 (從環境變數讀取，GitHub Secrets 設定同名變數即可)
+TG_TOKEN   = os.environ.get("TG_BOT_TOKEN", "")   # GitHub Secret: TG_BOT_TOKEN
+TG_CHAT_ID = os.environ.get("TG_CHAT_ID",  "")    # GitHub Secret: TG_CHAT_ID
 
 # 只保留電子相關產業 (上市 + 上櫃 的產業別名稱)
 ELECTRONIC_INDUSTRIES = {
@@ -339,7 +344,52 @@ def analyze(ticker: str, df: pd.DataFrame, market: str) -> dict | None:
 
 
 # ──────────────────────────────────────────────
-#  4. 主程式
+#  4. Telegram 通知
+# ──────────────────────────────────────────────
+def send_telegram(text: str) -> None:
+    """發送文字訊息到 Telegram，超過 4096 字自動分段。"""
+    if not TG_TOKEN or not TG_CHAT_ID:
+        print("  [TG] 未設定 Token 或 Chat ID，跳過發送。")
+        return
+    url = f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage"
+    limit = 4000  # 留緩衝，Telegram 上限 4096
+    chunks = [text[i:i+limit] for i in range(0, len(text), limit)]
+    for chunk in chunks:
+        try:
+            resp = requests.post(url, json={
+                "chat_id"    : TG_CHAT_ID,
+                "text"       : chunk,
+                "parse_mode" : "HTML",
+            }, timeout=15)
+            if not resp.ok:
+                print(f"  [TG] 發送失敗: {resp.text}")
+        except Exception as e:
+            print(f"  [TG] 發送錯誤: {e}")
+
+
+def format_telegram_message(df: pd.DataFrame, date_str: str) -> str:
+    """把篩選結果格式化成 Telegram 表格訊息。"""
+    lines = [
+        f"📊 <b>台股篩選結果 {date_str}</b>",
+        f"符合條件：<b>{len(df)} 支</b>（均線多頭＋月線即將扣低＋電子股）\n",
+        "<pre>",
+        f"{'股票':<8} {'族群':<12} {'點位':>7}",
+        "─" * 30,
+    ]
+
+    for _, row in df.iterrows():
+        signal = "⚡" if row["!"] == "!" else "  "
+        name   = str(row['名稱'])[:6]
+        sector = str(row['產業']).replace("業","")[:8]
+        price  = row['收盤價']
+        lines.append(f"{signal}{name:<7} {sector:<10} {price:>7.2f}")
+
+    lines.append("</pre>")
+    return "\n".join(lines)
+
+
+# ──────────────────────────────────────────────
+#  5. 主程式
 # ──────────────────────────────────────────────
 def main():
     print("=" * 55)
@@ -392,14 +442,10 @@ def main():
                     "漲幅(%)", "60日前高", "距前高(%)", "成交量(張)", "扣低狀態", "!"]
     print(df_out[display_cols].to_string())
 
-    # 存檔
-    if SAVE_CSV:
-        ts       = datetime.now().strftime("%Y%m%d_%H%M")
-        filename = BASE_DIR / f"台股篩選_{ts}.csv"
-        df_out.to_csv(filename, encoding="utf-8-sig")
-        print(f"\n  結果已存至: {filename.resolve()}")
-    else:
-        print("\n  (CSV 輸出已關閉，修改 SAVE_CSV = True 可開啟)")
+    # 發送 Telegram
+    print("\n  發送 Telegram...")
+    msg = format_telegram_message(df_out, datetime.now().strftime("%Y-%m-%d"))
+    send_telegram(msg)
 
 
 if __name__ == "__main__":
