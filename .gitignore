@@ -1,0 +1,27 @@
+# 只保留台股掃描相關檔案
+
+# 排除其他專案
+scrapers/
+data/
+frontend/
+bingx_funding_rate.py
+
+# Claude 設定
+.claude/
+.mcp.json
+
+# Python 暫存
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+
+# 結果檔 (每次產生，不需版控)
+台股篩選_*.csv
+台股篩選_*.xlsx
+
+# 系統檔
+.DS_Store
+Thumbs.db
