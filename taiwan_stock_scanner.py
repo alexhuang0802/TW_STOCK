@@ -15,6 +15,7 @@
 需安裝套件: pip install yfinance pandas requests
 """
 
+import io
 import requests
 import pandas as pd
 import yfinance as yf
@@ -89,7 +90,7 @@ def get_stock_list() -> list[dict]:
         try:
             resp = requests.get(url, headers=headers, timeout=20)
             resp.encoding = "big5"
-            tables = pd.read_html(resp.text)
+            tables = pd.read_html(io.StringIO(resp.text))
             df = tables[0]
 
             in_stock_section = False  # 是否在「股票」區段內
