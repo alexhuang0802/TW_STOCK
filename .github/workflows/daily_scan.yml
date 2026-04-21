@@ -23,4 +23,11 @@ jobs:
         env:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID:   ${{ secrets.TG_CHAT_ID }}
-        run: python taiwan_stock_scanner.py
+        run: python taiwan_stock_scanner.py 2>&1 | tee scan_output.txt
+
+      - name: 上傳篩選結果
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-result
+          path: scan_output.txt
