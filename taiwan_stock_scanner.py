@@ -41,9 +41,10 @@ MAX_WORKERS        = 20     # 同時下載執行緒數
 MA_PERIODS         = [5, 10, 20, 60, 120, 240]
 SAVE_CSV           = False  # 關閉 CSV 輸出，改由 Telegram 傳送文字
 
-# Telegram 設定 (從環境變數讀取，GitHub Secrets 設定同名變數即可)
-TG_TOKEN   = os.environ.get("TG_BOT_TOKEN", "")   # GitHub Secret: TG_BOT_TOKEN
-TG_CHAT_ID = os.environ.get("TG_CHAT_ID",  "")    # GitHub Secret: TG_CHAT_ID
+# Telegram 設定
+# 本機直接填入；GitHub Actions 會優先用 Secrets 覆蓋
+TG_TOKEN   = os.environ.get("TG_BOT_TOKEN", "在這裡填你的BOT_TOKEN")
+TG_CHAT_ID = os.environ.get("TG_CHAT_ID",   "在這裡填你的CHAT_ID")
 
 # 只保留電子相關產業 (上市 + 上櫃 的產業別名稱)
 ELECTRONIC_INDUSTRIES = {
@@ -371,18 +372,22 @@ def format_telegram_message(df: pd.DataFrame, date_str: str) -> str:
     """把篩選結果格式化成 Telegram 表格訊息。"""
     lines = [
         f"📊 <b>台股篩選結果 {date_str}</b>",
-        f"符合條件：<b>{len(df)} 支</b>（均線多頭＋月線即將扣低＋電子股）\n",
+        f"符合條件：<b>{len(df)} 支</b>（均線多頭＋月線即將扣低＋電子股）",
         "<pre>",
-        f"{'股票':<8} {'族群':<12} {'點位':>7}",
-        "─" * 30,
+        f"{'  代碼 名稱':<11} {'收盤':>6} {'漲幅%':>6} {'距高%':>6} {'量(張)':>7}  扣低狀態",
+        "─" * 62,
     ]
 
     for _, row in df.iterrows():
-        signal = "⚡" if row["!"] == "!" else "  "
-        name   = str(row['名稱'])[:6]
-        sector = str(row['產業']).replace("業","")[:8]
-        price  = row['收盤價']
-        lines.append(f"{signal}{name:<7} {sector:<10} {price:>7.2f}")
+        signal  = "⚡" if row["!"] == "!" else "  "
+        code    = str(row['代碼'])
+        name    = str(row['名稱'])[:4]
+        price   = row['收盤價']
+        chg     = row['漲幅(%)']
+        dist    = row['距前高(%)']
+        vol     = row['成交量(張)']
+        kou     = str(row['扣低狀態'])
+        lines.append(f"{signal}{code} {name:<4} {price:>6.2f} {chg:>+6.2f} {dist:>6.1f} {vol:>7}  {kou}")
 
     lines.append("</pre>")
     return "\n".join(lines)
