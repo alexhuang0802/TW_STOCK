@@ -17,7 +17,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - run: pip install yfinance pandas requests
+      - run: pip install yfinance pandas requests lxml
 
       - name: 執行篩選並發送 Telegram
         env:
