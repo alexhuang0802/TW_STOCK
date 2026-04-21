@@ -1,0 +1,39 @@
+name: 台股每日篩選
+
+on:
+  schedule:
+    # 台灣時間 12:00 = UTC 04:00
+    - cron: "0 4 * * 1-5"    # 週一到週五
+  workflow_dispatch:           # 也可以在 GitHub 網頁手動觸發
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40        # 最長跑 40 分鐘
+
+    steps:
+      - name: Checkout 程式碼
+        uses: actions/checkout@v4
+
+      - name: 設定 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: 安裝套件
+        run: pip install yfinance pandas requests
+
+      - name: 執行篩選程式
+        env:
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID:   ${{ secrets.TG_CHAT_ID }}
+        run: python taiwan_stock_scanner.py
+
+      - name: 上傳 CSV 結果 (可在 Actions 頁面下載)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: 篩選結果
+          path: "*.csv"
+          retention-days: 7

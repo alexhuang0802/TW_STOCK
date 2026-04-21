@@ -1,0 +1,453 @@
+{
+  "store": "家樂福",
+  "store_id": "carrefour",
+  "logo": "https://www.carrefour.com.tw/favicon.ico",
+  "website": "https://www.carrefour.com.tw",
+  "scraped_at": "2026-03-14T15:33:15.706803",
+  "promotions": [
+    {
+      "title": "量販促銷",
+      "image": "",
+      "start_date": "",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/catalogues#",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "主題企劃",
+      "image": "",
+      "start_date": "",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/catalogues#theme",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "促銷快報",
+      "image": "",
+      "start_date": "",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/catalogues#leaflet",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "超市促銷",
+      "image": "",
+      "start_date": "",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/catalogues#market",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "新店開幕",
+      "image": "",
+      "start_date": "",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/catalogues#new-opening",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "目錄更正公告",
+      "image": "",
+      "start_date": "",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/catalogues-corrections/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "促銷目錄",
+      "image": "",
+      "start_date": "",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/catalogues",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "APP下載",
+      "image": "",
+      "start_date": "",
+      "end_date": "",
+      "link": "https://events.carrefour.com.tw/appdownload-0315/index.html?utm_source=web&utm_campaign=appdownload",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "真食嚴選",
+      "image": "",
+      "start_date": "",
+      "end_date": "",
+      "link": "https://campaign.uni-prosperity.com.tw/qualityfood/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "∥咖意哩∥家樂福經國店 香酥雞柳咖哩 特價$149",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2026/03/咖意哩-內頁.jpg",
+      "start_date": "2026-03-03",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/spmevent20260306/",
+      "description": "",
+      "type": "product",
+      "deal": "特價$149",
+      "price": 149,
+      "category": "雞肉"
+    },
+    {
+      "title": "VIP品牌優惠_富利集團",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2025/08/5790_家樂福_vip異業_富利集團.jpg",
+      "start_date": "2025-09-03",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/vipxjardinefoodservices_250715-260630/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "VIP品牌優惠_富利集團 test",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2025/08/5790_家樂福_vip異業_富利集團.jpg",
+      "start_date": "2025-08-20",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/vip%e5%93%81%e7%89%8c%e5%84%aa%e6%83%a0_%e5%af%8c%e5%88%a9%e9%9b%86%e5%9c%98-test/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "2025/05/01-2025/09/30 月月送金幣抽獎活動 test",
+      "image": "",
+      "start_date": "2025-07-16",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/2025-05-01-2025-09-30-%e6%9c%88%e6%9c%88%e9%80%81%e9%87%91%e5%b9%a3%e6%8a%bd%e7%8d%8e%e6%b4%bb%e5%8b%95-test/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "2025/05/01-2025/09/30 月月送金幣抽獎活動",
+      "image": "",
+      "start_date": "2025-06-12",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/winnerlist-2025airconditionergold_0501-0930/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "∥鮮芋仙∥家樂福內湖店\t莓果奇圓 特價 $79",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2025/05/鮮芋仙-內湖家樂福官網_莓果奇圓_0.jpg",
+      "start_date": "2025-05-05",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/spmevent20250505-1/",
+      "description": "",
+      "type": "product",
+      "price": 79,
+      "category": "其他"
+    },
+    {
+      "title": "∥ 炸鷄大獅∥ 家樂福經國店 開幕三重送!",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2025/03/活動內頁-炸鷄大獅.jpg",
+      "start_date": "2025-03-07",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/spmevent20250307/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "∥ROOKIE∥ 全館商品4折起，全館商品三件再8折(特價品除外)",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2025/01/活動內頁-ROOKIE.jpg",
+      "start_date": "2025-01-20",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/spmevent20250120/",
+      "description": "",
+      "type": "product",
+      "deal": "4折起",
+      "category": "其他"
+    },
+    {
+      "title": "∥三商炸雞∥33有你!1+1桶特價399元",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2024/11/三商炸雞-2.jpeg",
+      "start_date": "2024-11-26",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/spmevent20241126/",
+      "description": "",
+      "type": "product",
+      "deal": "特價399",
+      "price": 399,
+      "category": "雞肉"
+    },
+    {
+      "title": "∥Q哥3C∥成功店/鼎山店/五甲店限定雙重優惠",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2024/06/Q哥.開幕慶2.jpg",
+      "start_date": "2024-06-13",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/spmevent20240613-2/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "∥鮮芋仙 ∥珍奶探戈特價69元",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2024/05/鮮芋仙_內湖家樂福官網_期間限定_活動內頁_0.jpg",
+      "start_date": "2024-05-07",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/spmevent20240507/",
+      "description": "",
+      "type": "product",
+      "deal": "特價69",
+      "price": 69,
+      "category": "其他"
+    },
+    {
+      "title": "∥依夢內衣∥24H無感無鋼圈內衣 買一送一",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2024/10/依夢2-7.jpg",
+      "start_date": "2024-10-29",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/spmevent20241029/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "∥丸亀製麵∥11週年慶 豚骨烏龍麵(中)買一送一",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2024/08/12001200-2.png",
+      "start_date": "2024-08-07",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/%e2%88%a5%e4%b8%b8%e4%ba%80%e8%a3%bd%e9%ba%b5%e2%88%a5%e6%af%8f%e6%9c%8811%e8%99%9f-%e7%ad%b7%e5%90%83%e4%b8%b8%e9%be%9c%e6%97%a5/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "家樂福仁德店∥洋城義大利餐廳∥指定主餐買一送一",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2024/06/448454385_788819560046955_7827096256999722348_n.jpg",
+      "start_date": "2024-06-27",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/spmevent20240627-1/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "∥酷聖石∥憑發票冰淇淋買一送一",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2024/06/活動內頁-酷聖石-1.jpg",
+      "start_date": "2024-06-12",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/spmevent20240612/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "熱血紅白藍指定商品買一送一",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2021/04/1-1.jpg",
+      "start_date": "2021-04-08",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/%e7%86%b1%e8%a1%80%e7%b4%85%e7%99%bd%e8%97%8d%e6%8c%87%e5%ae%9a%e5%95%86%e5%93%81%e8%b2%b7%e4%b8%80%e9%80%81%e4%b8%80/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "錢包獨享買一送一",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2021/03/錢包買一送一1.jpg",
+      "start_date": "2021-03-25",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/%e9%8c%a2%e5%8c%85%e7%8d%a8%e4%ba%ab%e8%b2%b7%e4%b8%80%e9%80%81%e4%b8%80/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "家樂福家電館滿2000送200",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2021/03/0316家電img_01.jpg",
+      "start_date": "2021-03-16",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/%e5%ae%b6%e6%a8%82%e7%a6%8f%e5%ae%b6%e9%9b%bb%e9%a4%a8%e6%bb%bf2000%e9%80%81200-20210317-0321/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "2026過年9折活動",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2026/01/2026DM_banner.jpg",
+      "start_date": "2026-01-19",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/2026cny9discount/",
+      "description": "",
+      "type": "product",
+      "deal": "9折",
+      "category": "其他"
+    },
+    {
+      "title": "2026過年9折活動 test",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2026/01/2026DM_banner.jpg",
+      "start_date": "2026-01-16",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/2026-cny-9%e6%8a%98%e5%84%aa%e6%83%a0-test/",
+      "description": "",
+      "type": "product",
+      "deal": "9折",
+      "category": "其他"
+    },
+    {
+      "title": "西藏店獨家促銷 9/5-9/11",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2025/09/20250905-0911-catalogue_uni-prosperity.com_.jpg",
+      "start_date": "2025-09-05",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/%e8%a5%bf%e8%97%8f%e5%ba%97%e7%8d%a8%e5%ae%b6%e4%bf%83%e9%8a%b7_0905-0911/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "西藏店獨家促銷 8/29-9/4",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2025/08/20250829-0904-catalogue_uni-prosperity.com_.jpg",
+      "start_date": "2025-08-27",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/%e8%a5%bf%e8%97%8f%e5%ba%97%e7%8d%a8%e5%ae%b6%e4%bf%83%e9%8a%b7_0829-0904/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "西藏店獨家促銷 8/22-8/28",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2025/08/20250822-0828-catalogue_uni-prosperity.com_.jpg",
+      "start_date": "2025-08-21",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/%e8%a5%bf%e8%97%8f%e5%ba%97%e7%8d%a8%e5%ae%b6%e4%bf%83%e9%8a%b7_0822-0828/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "西藏店獨家促銷 8/15-8/21",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2025/08/20250815-0821-catalogue_uni-prosperity.com_.jpg",
+      "start_date": "2025-08-15",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/%e8%a5%bf%e8%97%8f%e5%ba%97%e7%8d%a8%e5%ae%b6%e4%bf%83%e9%8a%b7_0815-0821/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "西藏店獨家促銷 8/8-8/14",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2025/08/20250808-0814-catalogue_uni-prosperity.com_.jpg",
+      "start_date": "2025-08-05",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/%e8%a5%bf%e8%97%8f%e5%ba%97%e7%8d%a8%e5%ae%b6%e4%bf%83%e9%8a%b7_0808-0814/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "西藏店獨家促銷 8/1-8/7",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2025/07/20250801-0807-catalogue_uni-prosperity.com_.jpg",
+      "start_date": "2025-07-31",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/%e8%a5%bf%e8%97%8f%e5%ba%97%e7%8d%a8%e5%ae%b6%e4%bf%83%e9%8a%b7_0801-0807/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "西藏店獨家促銷 7/25-7/31",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2025/07/20250725-0731-catalogue_uni-prosperity.com_.jpg",
+      "start_date": "2025-07-22",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/%e8%a5%bf%e8%97%8f%e5%ba%97%e7%8d%a8%e5%ae%b6%e4%bf%83%e9%8a%b7_0725-0731/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "西藏店獨家促銷 7/18-7/24",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2025/07/20250718-0724-catalogue_uni-prosperity.com_.jpg",
+      "start_date": "2025-07-18",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/%e8%a5%bf%e8%97%8f%e5%ba%97%e7%8d%a8%e5%ae%b6%e4%bf%83%e9%8a%b7_0718-0724/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "西藏店獨家促銷 7/11-7/17",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2025/07/20250711-0717-catalogue_uni-prosperity.com_.jpg",
+      "start_date": "2025-07-08",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/%e8%a5%bf%e8%97%8f%e5%ba%97%e7%8d%a8%e5%ae%b6%e4%bf%83%e9%8a%b7_0711-0717/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "西藏店獨家促銷 7/4-7/10",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2025/07/20250704-0710-catalogue_uni-prosperity.com_.jpg",
+      "start_date": "2025-07-02",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/%e8%a5%bf%e8%97%8f%e5%ba%97%e7%8d%a8%e5%ae%b6%e4%bf%83%e9%8a%b7_0704-0710/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "西藏店獨家促銷 6/27-7/3",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2025/06/20250627-0703-catalogue_uni-prosperity.com_.jpg",
+      "start_date": "2025-06-26",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/%e8%a5%bf%e8%97%8f%e5%ba%97%e7%8d%a8%e5%ae%b6%e4%bf%83%e9%8a%b7_0627-0703/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "西藏店獨家促銷 6/20-6/26",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2025/06/20250620-0626-catalogue_uni-prosperity.com_v2.jpg",
+      "start_date": "2025-06-17",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/%e8%a5%bf%e8%97%8f%e5%ba%97%e7%8d%a8%e5%ae%b6%e4%bf%83%e9%8a%b7_0620-0626/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "西藏店獨家促銷 6/6-6/12",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2025/06/20250606-0612-catalogue_uni-prosperity.com_.jpg",
+      "start_date": "2025-06-05",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/%e8%a5%bf%e8%97%8f%e5%ba%97%e7%8d%a8%e5%ae%b6%e4%bf%83%e9%8a%b7_0606-0612/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "西藏店獨家促銷 5/30-6/5",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2025/05/20250530-0605-catalogue_uni-prosperity.com_v2.jpg",
+      "start_date": "2025-05-29",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/%e8%a5%bf%e8%97%8f%e5%ba%97%e7%8d%a8%e5%ae%b6%e4%bf%83%e9%8a%b7_0530-0605/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "西藏店獨家促銷 5/23-5/29",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2025/05/20250523-0529-ecatalogue_uni-prosperity.com_.jpg",
+      "start_date": "2025-05-22",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/%e8%a5%bf%e8%97%8f%e5%ba%97%e7%8d%a8%e5%ae%b6%e4%bf%83%e9%8a%b7_0523-0529/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "西藏店獨家促銷 5/16-5/22",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2025/05/catalogue_uni-prosperity.com_.jpg",
+      "start_date": "2025-05-15",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/%e8%a5%bf%e8%97%8f%e5%ba%97%e7%8d%a8%e5%ae%b6%e4%bf%83%e9%8a%b7_0516-0522/",
+      "description": "",
+      "type": "campaign"
+    },
+    {
+      "title": "新年9折活動V3",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2024/12/2025DM03_top.jpg",
+      "start_date": "2024-12-27",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/%e6%96%b0%e5%b9%b49%e6%8a%98%e6%b4%bb%e5%8b%95v3/",
+      "description": "",
+      "type": "product",
+      "deal": "9折",
+      "category": "其他"
+    },
+    {
+      "title": "2025新年家美好9折活動",
+      "image": "https://www.carrefour.com.tw/wp-content/uploads/2024/12/2025DM03_top.jpg",
+      "start_date": "2024-12-25",
+      "end_date": "",
+      "link": "https://www.carrefour.com.tw/2025newyears9discount/",
+      "description": "",
+      "type": "product",
+      "deal": "9折",
+      "category": "其他"
+    }
+  ]
+}

@@ -1,0 +1,495 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Ad>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260218/0213index.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>哈利波特25週年集點活動</GA_Title>
+     <Image>/prima/mobile/260218/0213index_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260318/0313natgeo.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>NATGEO國家地理｜bitplay｜Plain me選物精品集點活動</GA_Title>
+     <Image>/prima/mobile/260318/0313natgeo_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260318/0313plainme.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>NATGEO國家地理｜bitplay｜Plain me選物精品集點活動</GA_Title>
+     <Image>/prima/mobile/260318/0313plainme_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260318/0313justdutch.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>Justdutch荷蘭手工編織娃娃精品集點活動</GA_Title>
+     <Image>/prima/mobile/260318/0313justdutch_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260318/0313mchugs.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>英國McHugs療癒娃娃精品集點活動</GA_Title>
+     <Image>/prima/mobile/260318/0313mchugs_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260304/0306sanrio.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>Sanrio三麗鷗生活療癒食器精品快閃購活動</GA_Title>
+     <Image>/prima/mobile/260304/0306sanrio_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260304/0306satana.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>satana台灣原創質感袋包精品集點活動</GA_Title>
+     <Image>/prima/mobile/260304/0306satana_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260304/0306storyjoguman.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>Story x JOGUMAN週邊精品快閃購活動</GA_Title>
+     <Image>/prima/mobile/260304/0306storyjoguman_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260218/0226crayon.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>蠟筆小新睡衣派對精品集點活動</GA_Title>
+     <Image>/prima/mobile/260218/0226crayon_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260218/0226crayon2.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>蠟筆小新睡衣派對精品集點活動</GA_Title>
+     <Image>/prima/mobile/260218/0226crayon2_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260218/0226crayon3.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>蠟筆小新睡衣派對精品集點活動</GA_Title>
+     <Image>/prima/mobile/260218/0226crayon3_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260218/0226womensday.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>日本夏普SHARP｜Electrolux伊萊克斯｜CERATE ION｜ISITO｜KOIZUMI精品集點活動</GA_Title>
+     <Image>/prima/mobile/260218/0226womensday_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260218/0226womensday3.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>日本夏普SHARP｜Electrolux伊萊克斯｜CERATE ION｜ISITO｜KOIZUMI精品集點活動</GA_Title>
+     <Image>/prima/mobile/260218/0226womensday3_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260218/0226foreofwee.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>寵愛女王節-FOREO洗臉機｜FWEE化妝品</GA_Title>
+     <Image>/prima/mobile/260218/0226foreofwee_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260218/0226idleminini.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>i-dle minini絨毛鑰匙圈特典卡組快閃購活動</GA_Title>
+     <Image>/prima/mobile/260218/0226idleminini_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260218/0226osamugoods.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>日本原田治OSAMU GOODS精品集點活動</GA_Title>
+     <Image>/prima/mobile/260218/0226osamugoods_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260218/0213mofusand.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>貓之日：貓福珊迪｜寵物品牌精品集點活動</GA_Title>
+     <Image>/prima/mobile/260218/0213mofusand_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260218/0213mofusand2.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>貓之日：貓福珊迪｜寵物品牌精品集點活動</GA_Title>
+     <Image>/prima/mobile/260218/0213mofusand2_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260218/0213harman.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>harmankardon｜Sudio｜msi開工3C精品集點活動</GA_Title>
+     <Image>/prima/mobile/260218/0213harman_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260218/0213mondaine.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>瑞士國鐵｜德國紅點｜FX CREATIONS｜BYZOOM健身器材精品集點活動</GA_Title>
+     <Image>/prima/mobile/260218/0213mondaine_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260218/0213mondaine2.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>瑞士國鐵｜德國紅點｜FX CREATIONS｜BYZOOM健身器材精品集點活動</GA_Title>
+     <Image>/prima/mobile/260218/0213mondaine2_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260218/0213mondaine3.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>瑞士國鐵｜德國紅點｜FX CREATIONS｜BYZOOM健身器材精品集點活動</GA_Title>
+     <Image>/prima/mobile/260218/0213mondaine3_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260218/0213nandemoikimono.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>朗萌綺盟可愛生物｜門市快閃購活動</GA_Title>
+     <Image>/prima/mobile/260218/0213nandemoikimono_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260218/0213nandemoikimono2.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>朗萌綺盟可愛生物｜門市快閃購活動</GA_Title>
+     <Image>/prima/mobile/260218/0213nandemoikimono2_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260204/0206kcg.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>德國KCG小豬存錢筒精品集點活動</GA_Title>
+     <Image>/prima/mobile/260204/0206kcg_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260204/0206moselect.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>mo select精品集點活動</GA_Title>
+     <Image>/prima/mobile/260204/0206moselect_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260204/0206thenorthface.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>The North Face 2026精品集點活動</GA_Title>
+     <Image>/prima/mobile/260204/0206thenorthface_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260204/0206tigerfamily.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>開學季-TigerFamily兒童書包精品集點活動</GA_Title>
+     <Image>/prima/mobile/260204/0206tigerfamily_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260204/0206work.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>開工應援季-OWALA保溫瓶｜SIDIZ電腦椅｜M2R安全帽｜NASA｜NINE WEST精品集點活動</GA_Title>
+     <Image>/prima/mobile/260204/0206work_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260204/0206work2.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>開工應援季-OWALA保溫瓶｜SIDIZ電腦椅｜M2R安全帽｜NASA｜NINE WEST精品集點活動</GA_Title>
+     <Image>/prima/mobile/260204/0206work2_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260204/0206work3.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>開工應援季-OWALA保溫瓶｜SIDIZ電腦椅｜M2R安全帽｜NASA｜NINE WEST精品集點活動</GA_Title>
+     <Image>/prima/mobile/260204/0206work3_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260204/0206work4.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>開工應援季-OWALA保溫瓶｜SIDIZ電腦椅｜M2R安全帽｜NASA｜NINE WEST精品集點活動</GA_Title>
+     <Image>/prima/mobile/260204/0206work4_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260121/0130coach.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>COACH｜MONOTHEME｜KARL LAGERFELD時尚大帝｜TOMMY HILFIGER香水精品集點活動</GA_Title>
+     <Image>/prima/mobile/260121/0130coach_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260121/0130fukufuku.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>日本FUKUFUKU福福喵喵可愛週邊精品集點活動</GA_Title>
+     <Image>/prima/mobile/260121/0130fukufuku_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260121/0130funy.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>FUNY｜MUNICHI 智能充電暖手寶精品集點活動</GA_Title>
+     <Image>/prima/mobile/260121/0130funy_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260121/0130jcode.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>真愛密碼｜元大｜晶漾馬年開運金飾精品集點活動</GA_Title>
+     <Image>/prima/mobile/260121/0130jcode_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260121/0130jordan.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>JORDAN｜NIKE｜NIKE 3Brand精品集點活動</GA_Title>
+     <Image>/prima/mobile/260121/0130jordan_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260121/0130katespade.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>Kate Spade iPhone 17手機週邊精品集點活動</GA_Title>
+     <Image>/prima/mobile/260121/0130katespade_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260121/0130maltese.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>線條小狗溫暖相伴集點活動</GA_Title>
+     <Image>/prima/mobile/260121/0130maltese_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260121/0130silver.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>三麗鷗銀飾飾品週邊精品門市快閃購</GA_Title>
+     <Image>/prima/mobile/260121/0130silver_m.jpg</Image>
+  </Item>
+
+  <Item>
+     <SDate>20231129</SDate>
+     <STime>000000</STime>
+     <EDate>20260505</EDate>
+     <ETime>235959</ETime>
+     <IndexImage>/prima/image/260121/0130wokybeast.jpg</IndexImage>
+     <Url>/event/epointprima/index.aspx</Url>
+     <Target>_blank</Target>
+     <GA_Title>WOKY｜野獸國精品集點活動</GA_Title>
+     <Image>/prima/mobile/260121/0130wokybeast_m.jpg</Image>
+  </Item>
+</Ad>

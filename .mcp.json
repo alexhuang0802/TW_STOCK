@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "line-desktop-mcp": {
+      "command": "node",
+      "args": ["C:\\Users\\ALEXHU~1\\AppData\\Roaming\\npm\\node_modules\\line-desktop-mcp\\src\\server.js"],
+      "env": {
+        "PATH": "C:\\Program Files\\AutoHotkey\\v2;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\Program Files\\nodejs;C:\\Program Files\\Git\\cmd;C:\\Users\\ALEXHU~1\\AppData\\Roaming\\npm"
+      }
+    }
+  }
+}
