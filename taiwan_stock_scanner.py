@@ -37,7 +37,7 @@ warnings.filterwarnings("ignore")
 MIN_VOLUME_ZHANG   = 1000   # 最低成交量 (張)
 HISTORY_DAYS       = 520    # 下載幾天歷史資料 (需 > 240 交易日, 約 1.5~2 年)
 KOU_DI_FUTURE_DAYS = 5      # 「即將扣低」往後看幾個交易日
-MAX_WORKERS        = 20     # 同時下載執行緒數
+MAX_WORKERS        = 5      # 同時下載執行緒數 (GitHub Actions 限流，設低一點)
 MA_PERIODS         = [5, 10, 20, 60, 120, 240]
 SAVE_CSV           = False  # 關閉 CSV 輸出，改由 Telegram 傳送文字
 
