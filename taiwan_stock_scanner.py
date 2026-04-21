@@ -164,30 +164,32 @@ def flatten_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def download_one(ticker: str, start: str, end: str):
+def download_one(ticker: str, start: str, end: str, retries: int = 3):
     """
-    下載單支股票歷史資料，失敗或資料無效回傳 None。
-    使用 Ticker.history() 比 yf.download() 更能正確處理無效代碼。
+    下載單支股票歷史資料，失敗自動重試，最多 retries 次。
     """
-    try:
-        t  = yf.Ticker(ticker)
-        df = t.history(start=start, end=end, auto_adjust=True)
-        df = flatten_columns(df)
+    import time
+    for attempt in range(retries):
+        try:
+            t  = yf.Ticker(ticker)
+            df = t.history(start=start, end=end, auto_adjust=True)
+            df = flatten_columns(df)
 
-        if df.empty or len(df) < 250:
-            return ticker, None
+            if df.empty or len(df) < 250:
+                return ticker, None
 
-        close = df["Close"].squeeze()
-        if isinstance(close, pd.DataFrame):
-            close = close.iloc[:, 0]
+            close = df["Close"].squeeze()
+            if isinstance(close, pd.DataFrame):
+                close = close.iloc[:, 0]
 
-        # 有效性檢查: 收盤價必須有合理波動 (std > 0)，否則是無效/重複資料
-        if close.std() < 0.001:
-            return ticker, None
+            if close.std() < 0.001:
+                return ticker, None
 
-        return ticker, df
-    except Exception:
-        return ticker, None
+            return ticker, df
+        except Exception:
+            if attempt < retries - 1:
+                time.sleep(2 ** attempt)  # 1秒, 2秒 退避重試
+    return ticker, None
 
 
 def download_all(stock_list: list[dict]) -> dict[str, pd.DataFrame]:
