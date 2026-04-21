@@ -368,21 +368,23 @@ def send_telegram(text: str) -> None:
 
 
 def format_telegram_message(df: pd.DataFrame, date_str: str) -> str:
-    """把篩選結果格式化成 Telegram 文字訊息。"""
-    lines = [f"📊 <b>台股篩選結果 {date_str}</b>"]
-    lines.append(f"符合條件：<b>{len(df)} 支</b>（均線多頭＋月線即將扣低＋電子股）\n")
+    """把篩選結果格式化成 Telegram 表格訊息。"""
+    lines = [
+        f"📊 <b>台股篩選結果 {date_str}</b>",
+        f"符合條件：<b>{len(df)} 支</b>（均線多頭＋月線即將扣低＋電子股）\n",
+        "<pre>",
+        f"{'股票':<8} {'族群':<12} {'點位':>7}",
+        "─" * 30,
+    ]
 
     for _, row in df.iterrows():
-        signal = "⚡" if row["!"] == "!" else ""
-        change = row["漲幅(%)"]
-        arrow  = "▲" if change > 0 else ("▼" if change < 0 else "─")
-        lines.append(
-            f"{signal}<b>{row['名稱']}</b>（{row['代碼']}）{row['產業']}\n"
-            f"  {arrow} {row['收盤價']} ({change:+.2f}%)  "
-            f"距前高 {row['距前高(%)']}%  "
-            f"量 {row['成交量(張)']}張  "
-            f"{row['扣低狀態']}"
-        )
+        signal = "⚡" if row["!"] == "!" else "  "
+        name   = str(row['名稱'])[:6]          # 最多6字
+        sector = str(row['產業']).replace("業","")[:8]  # 去掉「業」字，最多8字
+        price  = row['收盤價']
+        lines.append(f"{signal}{name:<7} {sector:<10} {price:>7.2f}")
+
+    lines.append("</pre>")
     return "\n".join(lines)
 
 
