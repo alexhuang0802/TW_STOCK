@@ -38,7 +38,7 @@ HISTORY_DAYS       = 520    # 下載幾天歷史資料 (需 > 240 交易日, 約
 KOU_DI_FUTURE_DAYS = 5      # 「即將扣低」往後看幾個交易日
 MAX_WORKERS        = 20     # 同時下載執行緒數
 MA_PERIODS         = [5, 10, 20, 60, 120, 240]
-SAVE_CSV           = True   # True = 輸出 CSV 結果檔；False = 只印在終端機
+SAVE_CSV           = False  # 關閉 CSV 輸出，改由 Telegram 傳送文字
 
 # Telegram 設定 (從環境變數讀取，GitHub Secrets 設定同名變數即可)
 TG_TOKEN   = os.environ.get("TG_BOT_TOKEN", "")   # GitHub Secret: TG_BOT_TOKEN
@@ -438,15 +438,6 @@ def main():
     display_cols = ["名稱", "產業", "代碼", "市場", "收盤價",
                     "漲幅(%)", "60日前高", "距前高(%)", "成交量(張)", "扣低狀態", "!"]
     print(df_out[display_cols].to_string())
-
-    # 存檔
-    if SAVE_CSV:
-        ts       = datetime.now().strftime("%Y%m%d_%H%M")
-        filename = BASE_DIR / f"台股篩選_{ts}.csv"
-        df_out.to_csv(filename, encoding="utf-8-sig")
-        print(f"\n  結果已存至: {filename.resolve()}")
-    else:
-        print("\n  (CSV 輸出已關閉，修改 SAVE_CSV = True 可開啟)")
 
     # 發送 Telegram
     print("\n  發送 Telegram...")
