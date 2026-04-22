@@ -2,7 +2,8 @@ name: 台股每日篩選
 
 on:
   schedule:
-    - cron: "0 4 * * 1-5"   # 台灣時間 12:00（週一到週五）
+    - cron: "0 4 * * 1-5"    # 台灣時間 12:00（週一到週五）
+    - cron: "0 14 * * 1-5"   # 台灣時間 22:00（週一到週五）
   workflow_dispatch:          # 手動觸發
 
 jobs:
@@ -17,7 +18,15 @@ jobs:
         with:
           python-version: "3.11"
 
-      - run: pip install yfinance pandas requests lxml
+      - run: pip install pandas requests lxml
+
+      - name: 還原歷史資料快取
+        uses: actions/cache@v4
+        with:
+          path: stock_data_cache.pkl
+          key: stock-cache-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            stock-cache-${{ runner.os }}-
 
       - name: 執行篩選並發送 Telegram
         env:
