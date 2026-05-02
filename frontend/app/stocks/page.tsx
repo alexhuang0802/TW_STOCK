@@ -304,7 +304,6 @@ export default function StocksPage() {
       <header className="border-b border-gray-800/60 sticky top-0 z-50 bg-[#0d1117]/95 backdrop-blur">
         <div className="max-w-screen-2xl mx-auto px-5 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <Link href="/" className="text-gray-600 hover:text-gray-400 text-sm">← 省錢</Link>
             <div>
               <h1 className="text-base font-bold">股市分析</h1>
               <p className="text-[10px] text-gray-600">追蹤自選股、檢視技術指標、並把結構化即時快照交給 AI 分析。</p>
