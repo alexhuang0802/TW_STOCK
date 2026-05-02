@@ -3,7 +3,6 @@
 # 排除其他專案
 scrapers/
 data/
-frontend/
 bingx_funding_rate.py
 
 # Claude 設定
