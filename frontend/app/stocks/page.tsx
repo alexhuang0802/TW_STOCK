@@ -97,6 +97,7 @@ function TradingViewChart({ symbol }: { symbol: string }) {
       style: '1',
       locale: 'zh_TW',
       allow_symbol_change: false,
+      hide_side_toolbar: false,
       calendar: false,
       support_host: 'https://www.tradingview.com',
     });
