@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 // ── Types ─────────────────────────────────────────────────────────────────
@@ -20,6 +19,12 @@ interface Indicators {
   intraRange: string; weekRange: string;
 }
 interface NewsItem { title: string; link: string; publisher?: string; providerPublishTime?: number; }
+interface Financials {
+  marketCap: string; trailingPE: string; forwardPE: string; eps: string;
+  revenue: string; revenueGrowth: string; grossMargin: string; profitMargin: string;
+  roe: string; roa: string; debtToEquity: string; currentRatio: string;
+  priceToBook: string; dividendYield: string; beta: string; shortRatio: string;
+}
 
 // ── Constants ─────────────────────────────────────────────────────────────
 const DEFAULT_WATCHLIST = ['2330.TW', '0050.TW', '2454.TW', '0056.TW', 'AAPL', 'NVDA', 'TSM', 'MSFT'];
@@ -29,10 +34,6 @@ const TW_NAMES: Record<string, string> = {
   '2882': '國泰金', '2891': '中信金', '3008': '大立光', '2412': '中華電',
   '00918': '國泰永續高股息', '00919': '群益台灣精選高息',
 };
-const RANGES = [
-  { key: '1d', label: '1D' }, { key: '1mo', label: '1M' },
-  { key: '3mo', label: '3M' }, { key: '6mo', label: '6M' }, { key: '1y', label: '1Y' },
-];
 const INDICATOR_DEFS = [
   { key: 'sma5', label: 'SMA 5' }, { key: 'sma20', label: 'SMA 20' },
   { key: 'rsi14', label: 'RSI 14' }, { key: 'macd', label: 'MACD' },
@@ -65,91 +66,80 @@ function Sparkline({ candles, positive }: { candles: Candle[]; positive: boolean
   );
 }
 
-// ── Candlestick Chart ─────────────────────────────────────────────────────
-function CandlestickChart({ candles, currentPrice }: { candles: Candle[]; currentPrice?: number }) {
-  const valid = candles.filter(c => c.open && c.close && c.high && c.low);
-  if (valid.length < 3) return <div className="h-64 flex items-center justify-center text-gray-600 text-sm">圖表載入中…</div>;
+// ── TradingView Chart ─────────────────────────────────────────────────────
+function TradingViewChart({ symbol }: { symbol: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const tvSym = symbol.endsWith('.TWO')
+    ? `TPEX:${symbol.replace('.TWO', '')}`
+    : symbol.endsWith('.TW')
+    ? `TWSE:${symbol.replace('.TW', '')}`
+    : symbol;
 
-  const W = 800, CH = 280, PAD_T = 12, PAD_R = 52, PAD_L = 4;
-  const allPrices = valid.flatMap(c => [c.high, c.low]);
-  const minP = Math.min(...allPrices), maxP = Math.max(...allPrices), rangeP = maxP - minP || 1;
-  const usableW = W - PAD_L - PAD_R;
-  const slotW = usableW / valid.length;
-  const bodyW = Math.max(2, slotW * 0.6);
-  const mapX = (i: number) => PAD_L + (i + 0.5) * slotW;
-  const mapY = (p: number) => PAD_T + (1 - (p - minP) / rangeP) * (CH - PAD_T * 2);
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    el.innerHTML = '';
+    const widget = document.createElement('div');
+    widget.className = 'tradingview-widget-container__widget';
+    widget.style.height = '100%';
+    widget.style.width = '100%';
+    el.appendChild(widget);
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+    script.async = true;
+    script.innerHTML = JSON.stringify({
+      autosize: true,
+      symbol: tvSym,
+      interval: 'D',
+      timezone: 'Asia/Taipei',
+      theme: 'dark',
+      style: '1',
+      locale: 'zh_TW',
+      allow_symbol_change: false,
+      calendar: false,
+      support_host: 'https://www.tradingview.com',
+    });
+    el.appendChild(script);
+    return () => { if (el) el.innerHTML = ''; };
+  }, [tvSym]);
 
-  const calcSMA = (period: number): (number | null)[] =>
-    valid.map((_, i) => i < period - 1 ? null : valid.slice(i - period + 1, i + 1).reduce((s, c) => s + c.close, 0) / period);
-
-  const buildPath = (vals: (number | null)[]) => {
-    let d = '', started = false;
-    vals.forEach((v, i) => { if (v == null) return; const x = mapX(i).toFixed(1), y = mapY(v).toFixed(1); d += started ? ` L${x},${y}` : `M${x},${y}`; started = true; });
-    return d;
-  };
-
-  const yLabels = [0, 0.25, 0.5, 0.75, 1].map(r => ({ y: mapY(minP + r * rangeP), val: (minP + r * rangeP) >= 100 ? (minP + r * rangeP).toFixed(0) : (minP + r * rangeP).toFixed(2) }));
-  const step = Math.max(1, Math.floor(valid.length / 6));
-  const xLabels = valid.filter((_, i) => i % step === 0 || i === valid.length - 1).map(c => {
-    const i = valid.indexOf(c);
-    return { x: mapX(i), label: new Date(c.time).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' }) };
-  });
-
-  return (
-    <svg viewBox={`0 0 ${W} ${CH + 16}`} className="w-full" style={{ height: 300 }}>
-      {yLabels.map((l, i) => (
-        <g key={i}>
-          <line x1={PAD_L} y1={l.y} x2={W - PAD_R} y2={l.y} stroke="#1f2937" strokeWidth="0.8" />
-          <text x={W - PAD_R + 4} y={l.y + 4} fontSize="9" fill="#6b7280">{l.val}</text>
-        </g>
-      ))}
-      {valid.map((c, i) => {
-        const isUp = c.close >= c.open; const color = isUp ? '#22c55e' : '#ef4444';
-        const x = mapX(i); const bTop = mapY(Math.max(c.open, c.close)); const bBot = mapY(Math.min(c.open, c.close)); const bH = Math.max(1.5, bBot - bTop);
-        return <g key={i}><line x1={x} y1={mapY(c.high)} x2={x} y2={mapY(c.low)} stroke={color} strokeWidth="1" /><rect x={(x - bodyW / 2).toFixed(1)} y={bTop.toFixed(1)} width={bodyW.toFixed(1)} height={bH.toFixed(1)} fill={color} /></g>;
-      })}
-      <path d={buildPath(calcSMA(5))} fill="none" stroke="#f59e0b" strokeWidth="1.5" />
-      <path d={buildPath(calcSMA(20))} fill="none" stroke="#3b82f6" strokeWidth="2" />
-      {currentPrice && <line x1={PAD_L} y1={mapY(currentPrice)} x2={W - PAD_R} y2={mapY(currentPrice)} stroke="#ffffff30" strokeWidth="0.8" strokeDasharray="4 3" />}
-      <g>
-        <rect x={PAD_L} y={PAD_T - 2} width={130} height={14} fill="#111827" />
-        <line x1={PAD_L + 2} y1={PAD_T + 5} x2={PAD_L + 18} y2={PAD_T + 5} stroke="#f59e0b" strokeWidth="1.5" />
-        <text x={PAD_L + 22} y={PAD_T + 9} fontSize="9" fill="#f59e0b">SMA5</text>
-        <line x1={PAD_L + 55} y1={PAD_T + 5} x2={PAD_L + 71} y2={PAD_T + 5} stroke="#3b82f6" strokeWidth="2" />
-        <text x={PAD_L + 75} y={PAD_T + 9} fontSize="9" fill="#3b82f6">SMA20</text>
-      </g>
-      {xLabels.map((l, i) => <text key={i} x={l.x} y={CH + 13} fontSize="8" fill="#6b7280" textAnchor="middle">{l.label}</text>)}
-    </svg>
-  );
+  return <div className="tradingview-widget-container w-full" ref={containerRef} style={{ height: 460 }} />;
 }
 
-// ── Volume Bar Chart ──────────────────────────────────────────────────────
-function VolumeChart({ candles }: { candles: Candle[] }) {
-  const valid = candles.filter(c => c.volume > 0).slice(-30);
-  if (!valid.length) return <div className="h-48 flex items-center justify-center text-gray-600 text-sm">無資料</div>;
-  const maxVol = Math.max(...valid.map(c => c.volume));
-  const W = 200, H = 180, PAD_B = 20, PAD_T = 8, PAD_L = 4, PAD_R = 4;
-  const slotW = (W - PAD_L - PAD_R) / valid.length;
-  const barW = Math.max(2, slotW * 0.75);
-  const mapX = (i: number) => PAD_L + (i + 0.5) * slotW;
-  const mapH = (v: number) => (v / maxVol) * (H - PAD_T - PAD_B);
-  const step = Math.max(1, Math.floor(valid.length / 4));
-  const xLabels = valid.filter((_, i) => i % step === 0 || i === valid.length - 1).map((c, _, __, i = valid.indexOf(c)) => ({
-    x: mapX(i), label: new Date(c.time).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' }),
-  }));
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full">
-      {[0.25, 0.5, 0.75, 1].map((r, i) => {
-        const y = PAD_T + (H - PAD_T - PAD_B) * (1 - r);
-        return <g key={i}><line x1={PAD_L} y1={y} x2={W - PAD_R} y2={y} stroke="#1f2937" strokeWidth="0.5" /><text x={W - PAD_R + 2} y={y + 3} fontSize="7" fill="#4b5563">{fmtVol(maxVol * r)}</text></g>;
-      })}
-      {valid.map((c, i) => {
-        const h = mapH(c.volume); const x = mapX(i); const y = H - PAD_B - h;
-        return <rect key={i} x={(x - barW / 2).toFixed(1)} y={y.toFixed(1)} width={barW.toFixed(1)} height={h.toFixed(1)} fill="#f59e0b" rx="1" />;
-      })}
-      {xLabels.map((l, i) => <text key={i} x={l.x} y={H - 4} fontSize="7" fill="#6b7280" textAnchor="middle">{l.label}</text>)}
-    </svg>
-  );
+// ── TradingView Technical Analysis ────────────────────────────────────────
+function TradingViewAnalysis({ symbol }: { symbol: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const tvSym = symbol.endsWith('.TWO')
+    ? `TPEX:${symbol.replace('.TWO', '')}`
+    : symbol.endsWith('.TW')
+    ? `TWSE:${symbol.replace('.TW', '')}`
+    : symbol;
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    el.innerHTML = '';
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js';
+    script.async = true;
+    script.innerHTML = JSON.stringify({
+      interval: '1D',
+      width: '100%',
+      isTransparent: true,
+      height: 380,
+      symbol: tvSym,
+      showIntervalTabs: true,
+      displayMode: 'single',
+      locale: 'zh_TW',
+      colorTheme: 'dark',
+    });
+    el.appendChild(script);
+    return () => { if (el) el.innerHTML = ''; };
+  }, [tvSym]);
+
+  return <div className="tradingview-widget-container" ref={containerRef} style={{ minHeight: 380 }} />;
 }
 
 // ── Indicator Card ────────────────────────────────────────────────────────
@@ -174,15 +164,14 @@ export default function StocksPage() {
   const [sparklines, setSparklines] = useState<Record<string, Candle[]>>({});
   const [selected, setSelected] = useState<string | null>(null);
   const [indicators, setIndicators] = useState<Indicators | null>(null);
-  const [history, setHistory] = useState<Candle[]>([]);
+  const [financials, setFinancials] = useState<Financials | null>(null);
   const [news, setNews] = useState<NewsItem[]>([]);
   const [market, setMarket] = useState<'all' | 'tw' | 'us'>('all');
   const [searchInput, setSearchInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
-  const [range, setRange] = useState('3mo');
   const [indicLoading, setIndicLoading] = useState(false);
-  const [histLoading, setHistLoading] = useState(false);
+  const [finLoading, setFinLoading] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -226,17 +215,6 @@ export default function StocksPage() {
     finally { setIndicLoading(false); }
   }, []);
 
-  const fetchHistory = useCallback(async (symbol: string, r: string) => {
-    setHistLoading(true); setHistory([]);
-    try {
-      const interval = r === '1d' ? '5m' : '1d';
-      const res = await fetch(`/api/stocks/history?symbol=${symbol}&range=${r}&interval=${interval}`);
-      const data = await res.json();
-      if (data.candles) setHistory(data.candles);
-    } catch { /* ignore */ }
-    finally { setHistLoading(false); }
-  }, []);
-
   const fetchNews = useCallback(async (symbol: string) => {
     setNews([]);
     try {
@@ -244,6 +222,16 @@ export default function StocksPage() {
       const data = await res.json();
       setNews(Array.isArray(data) ? data.slice(0, 5) : []);
     } catch { /* ignore */ }
+  }, []);
+
+  const fetchFinancials = useCallback(async (symbol: string) => {
+    setFinLoading(true); setFinancials(null);
+    try {
+      const res = await fetch(`/api/stocks/financials?symbol=${symbol}`);
+      const data = await res.json();
+      if (!data.error) setFinancials(data);
+    } catch { /* ignore */ }
+    finally { setFinLoading(false); }
   }, []);
 
   useEffect(() => {
@@ -261,14 +249,10 @@ export default function StocksPage() {
   useEffect(() => {
     if (!selected) return;
     fetchIndicators(selected);
-    fetchHistory(selected, range);
+    fetchFinancials(selected);
     fetchNews(selected);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected]);
-
-  useEffect(() => {
-    if (selected) fetchHistory(selected, range);
-  }, [range, selected, fetchHistory]);
 
   const addStock = (raw: string) => {
     const sym = /^\d{4,5}$/.test(raw.toUpperCase()) ? `${raw.toUpperCase()}.TW` : raw.toUpperCase();
@@ -423,95 +407,127 @@ export default function StocksPage() {
 
           {/* Chart section (only when selected) */}
           {selected && (
-            <div className="grid grid-cols-1 xl:grid-cols-[1fr_220px] gap-3">
+            <div className="space-y-3">
 
-              {/* K-Line chart */}
-              <div className="bg-gray-900/70 border border-gray-700/50 rounded-xl p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div>
-                    <span className="text-xs font-semibold text-gray-400">K 線趨勢</span>
-                    <div className="text-sm font-bold text-white mt-0.5">
-                      {base(selected)} · {selectedQuote ? displayName(selectedQuote) : ''}
-                      {selectedQuote && <span className="text-gray-400 font-normal ml-2">{selectedQuote.currency ?? ''} {fmtPrice(selectedQuote.regularMarketPrice)}</span>}
-                    </div>
+              {/* Main chart + right panel */}
+              <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-3">
+
+                {/* TradingView K-Line chart */}
+                <div className="bg-gray-900/70 border border-gray-700/50 rounded-xl p-4">
+                  <div className="text-xs text-gray-500 mb-2">
+                    K 線趨勢 &nbsp;·&nbsp;
+                    <span className="text-gray-300 font-semibold">{base(selected)}</span>
+                    {selectedQuote && <span className="ml-2 text-gray-400">{selectedQuote.currency} {fmtPrice(selectedQuote.regularMarketPrice)}</span>}
                   </div>
-                  <div className="flex gap-1">
-                    {RANGES.map(r => (
-                      <button key={r.key} onClick={() => setRange(r.key)}
-                        className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${range === r.key ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700'}`}>
-                        {r.label}
-                      </button>
-                    ))}
-                  </div>
+                  <TradingViewChart key={selected} symbol={selected} />
                 </div>
-                {histLoading ? (
-                  <div className="h-64 flex items-center justify-center">
-                    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                  </div>
-                ) : (
-                  <CandlestickChart candles={history} currentPrice={selectedQuote?.regularMarketPrice} />
-                )}
 
-                {/* Indicator cards below chart */}
-                <div className="mt-3 border-t border-gray-800 pt-3">
-                  {indicLoading ? (
-                    <div className="grid grid-cols-7 gap-1.5">
-                      {Array.from({ length: 14 }).map((_, i) => (
-                        <div key={i} className="bg-gray-800/50 rounded-lg px-3 py-2.5 animate-pulse"><div className="h-2 bg-gray-700 rounded w-2/3 mb-2" /><div className="h-3 bg-gray-700 rounded" /></div>
+                {/* Right: Technical Analysis + Stats + News */}
+                <div className="space-y-3">
+
+                  {/* TradingView Technical Analysis */}
+                  <div className="bg-gray-900/70 border border-gray-700/50 rounded-xl p-3 overflow-hidden">
+                    <div className="text-[10px] text-gray-500 mb-1">技術分析評分</div>
+                    <TradingViewAnalysis key={selected} symbol={selected} />
+                  </div>
+
+                  {/* Quick stats */}
+                  {selectedQuote && (
+                    <div className="bg-gray-900/70 border border-gray-700/50 rounded-xl p-4 grid grid-cols-2 gap-3">
+                      {[
+                        ['收盤', fmtPrice(selectedQuote.regularMarketPrice)],
+                        ['成交量', fmtVol(selectedQuote.regularMarketVolume)],
+                        ['今日最高', fmtPrice(selectedQuote.regularMarketDayHigh)],
+                        ['今日最低', fmtPrice(selectedQuote.regularMarketDayLow)],
+                        ['52W 最高', selectedQuote.fiftyTwoWeekHigh ? fmtPrice(selectedQuote.fiftyTwoWeekHigh) : '-'],
+                        ['52W 最低', selectedQuote.fiftyTwoWeekLow ? fmtPrice(selectedQuote.fiftyTwoWeekLow) : '-'],
+                      ].map(([label, val]) => (
+                        <div key={label}>
+                          <div className="text-[10px] text-gray-600">{label}</div>
+                          <div className="text-sm font-semibold text-gray-200">{val}</div>
+                        </div>
                       ))}
                     </div>
-                  ) : indicators ? (
-                    <div className="grid grid-cols-4 sm:grid-cols-7 gap-1.5">
-                      {INDICATOR_DEFS.map(({ key, label }) => <IndicatorCard key={key} label={label} value={indicators[key]} />)}
+                  )}
+
+                  {/* News */}
+                  {news.length > 0 && (
+                    <div className="bg-gray-900/70 border border-gray-700/50 rounded-xl p-4">
+                      <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">相關新聞</div>
+                      <div className="space-y-2.5">
+                        {news.map((item, i) => (
+                          <a key={i} href={item.link} target="_blank" rel="noopener noreferrer" className="block group">
+                            <p className="text-xs text-gray-400 group-hover:text-blue-400 transition-colors line-clamp-2 leading-snug">{item.title}</p>
+                            <p className="text-[10px] text-gray-700 mt-0.5">{item.publisher}{item.providerPublishTime && <> · {new Date(item.providerPublishTime * 1000).toLocaleDateString('zh-TW')}</>}</p>
+                          </a>
+                        ))}
+                      </div>
                     </div>
-                  ) : null}
+                  )}
                 </div>
               </div>
 
-              {/* Right: Volume chart + stats */}
-              <div className="space-y-3">
-                <div className="bg-gray-900/70 border border-gray-700/50 rounded-xl p-4">
-                  <div className="text-[10px] text-gray-500 mb-1">量能輪廓</div>
-                  <div className="text-xs font-semibold text-gray-300 mb-2">交易活躍度</div>
-                  <div style={{ height: 180 }}>
-                    <VolumeChart candles={history} />
-                  </div>
-                </div>
-
-                {/* Stats */}
-                {selectedQuote && (
-                  <div className="bg-gray-900/70 border border-gray-700/50 rounded-xl p-4 grid grid-cols-2 gap-3">
-                    {[
-                      ['開盤', indicators ? '-' : '-'],
-                      ['收收', fmtPrice(selectedQuote.regularMarketPrice)],
-                      ['成交量', fmtVol(selectedQuote.regularMarketVolume)],
-                      ['市值', fmtHMil(selectedQuote.regularMarketVolume * selectedQuote.regularMarketPrice)],
-                      ['今日最高', fmtPrice(selectedQuote.regularMarketDayHigh)],
-                      ['今日最低', fmtPrice(selectedQuote.regularMarketDayLow)],
-                    ].map(([label, val]) => (
-                      <div key={label}>
-                        <div className="text-[10px] text-gray-600">{label}</div>
-                        <div className="text-sm font-semibold text-gray-200">{val}</div>
+              {/* Financials panel */}
+              <div className="bg-gray-900/70 border border-gray-700/50 rounded-xl p-4">
+                <div className="text-xs font-semibold text-gray-400 mb-3">📋 財務數據</div>
+                {finLoading ? (
+                  <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                    {Array.from({ length: 16 }).map((_, i) => (
+                      <div key={i} className="bg-gray-800/50 rounded-lg px-3 py-2.5 animate-pulse">
+                        <div className="h-2 bg-gray-700 rounded w-2/3 mb-2" /><div className="h-3 bg-gray-700 rounded" />
                       </div>
                     ))}
                   </div>
-                )}
-
-                {/* News */}
-                {news.length > 0 && (
-                  <div className="bg-gray-900/70 border border-gray-700/50 rounded-xl p-4">
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">相關新聞</div>
-                    <div className="space-y-2.5">
-                      {news.map((item, i) => (
-                        <a key={i} href={item.link} target="_blank" rel="noopener noreferrer" className="block group">
-                          <p className="text-xs text-gray-400 group-hover:text-blue-400 transition-colors line-clamp-2 leading-snug">{item.title}</p>
-                          <p className="text-[10px] text-gray-700 mt-0.5">{item.publisher}{item.providerPublishTime && <> · {new Date(item.providerPublishTime * 1000).toLocaleDateString('zh-TW')}</>}</p>
-                        </a>
-                      ))}
-                    </div>
+                ) : financials ? (
+                  <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                    {([
+                      ['市值', financials.marketCap],
+                      ['本益比', financials.trailingPE],
+                      ['預期本益比', financials.forwardPE],
+                      ['EPS', financials.eps],
+                      ['營收', financials.revenue],
+                      ['營收成長', financials.revenueGrowth],
+                      ['毛利率', financials.grossMargin],
+                      ['淨利率', financials.profitMargin],
+                      ['ROE', financials.roe],
+                      ['ROA', financials.roa],
+                      ['負債/權益', financials.debtToEquity],
+                      ['流動比率', financials.currentRatio],
+                      ['股價淨值比', financials.priceToBook],
+                      ['殖利率', financials.dividendYield],
+                      ['Beta', financials.beta],
+                      ['空頭比率', financials.shortRatio],
+                    ] as [string, string][]).map(([label, val]) => (
+                      <div key={label} className="bg-gray-800/50 border border-gray-700/40 rounded-lg px-3 py-2.5 min-w-0">
+                        <div className="text-[10px] text-gray-500 mb-1 truncate">{label}</div>
+                        <div className="text-sm font-semibold text-white truncate">{val}</div>
+                      </div>
+                    ))}
                   </div>
+                ) : (
+                  <div className="text-xs text-gray-600">財務數據暫不可用</div>
                 )}
               </div>
+
+              {/* Technical indicator cards */}
+              {(indicLoading || indicators) && (
+                <div className="bg-gray-900/70 border border-gray-700/50 rounded-xl p-4">
+                  <div className="text-xs font-semibold text-gray-400 mb-3">📈 技術指標</div>
+                  {indicLoading ? (
+                    <div className="grid grid-cols-4 sm:grid-cols-7 gap-1.5">
+                      {Array.from({ length: 14 }).map((_, i) => (
+                        <div key={i} className="bg-gray-800/50 rounded-lg px-3 py-2.5 animate-pulse">
+                          <div className="h-2 bg-gray-700 rounded w-2/3 mb-2" /><div className="h-3 bg-gray-700 rounded" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-4 sm:grid-cols-7 gap-1.5">
+                      {INDICATOR_DEFS.map(({ key, label }) => <IndicatorCard key={key} label={label} value={indicators![key]} />)}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
