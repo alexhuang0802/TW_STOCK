@@ -13,6 +13,7 @@ interface IndexItem {
   change: string;
   changePct: string;
   up: boolean;
+  closes: number[];
   marketState: string;
 }
 
@@ -29,14 +30,38 @@ interface StockFlow {
   name: string;
   net: string;
   netRaw: number;
+  isNew: boolean;
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────
+// ── Sparkline ─────────────────────────────────────────────────────────────
+
+function MiniSparkline({ closes, up }: { closes: number[]; up: boolean }) {
+  if (closes.length < 2) return <div className="w-24 h-10" />;
+  const min = Math.min(...closes);
+  const max = Math.max(...closes);
+  const r = max - min || 1;
+  const W = 96, H = 40, P = 2;
+  const pts = closes
+    .map((v, i) => `${P + (i / (closes.length - 1)) * (W - P * 2)},${P + (1 - (v - min) / r) * (H - P * 2)}`)
+    .join(' ');
+  const fillPts = `${P},${H - P} ${pts} ${W - P},${H - P}`;
+  const color = up ? '#16a34a' : '#dc2626';
+  const fillColor = up ? 'rgba(22,163,74,0.12)' : 'rgba(220,38,38,0.10)';
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-24 h-10 flex-shrink-0">
+      <polygon points={fillPts} fill={fillColor} />
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.5"
+        strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ── Flow Bar ───────────────────────────────────────────────────────────────
 
 function FlowBar({ value, max }: { value: number; max: number }) {
   const pct = Math.min(Math.abs(value) / max * 100, 100);
   return (
-    <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden mt-1">
+    <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden mt-1">
       <div
         className={`h-full rounded-full transition-all ${value >= 0 ? 'bg-green-500' : 'bg-red-500'}`}
         style={{ width: `${pct}%`, marginLeft: value < 0 ? `${100 - pct}%` : 0 }}
@@ -93,24 +118,22 @@ export default function HomePage() {
     : 1;
 
   return (
-    <div className="min-h-screen bg-[#0d1117] text-white">
+    <div className="min-h-screen bg-gray-50 text-gray-900">
 
       {/* ── Nav ── */}
-      <nav className="border-b border-gray-800/60 bg-[#0d1117]/95 backdrop-blur sticky top-0 z-50">
+      <nav className="border-b border-gray-200 bg-white/95 backdrop-blur sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center text-sm font-bold">S</div>
-            <span className="font-bold text-base">股市分析</span>
-            <span className="hidden sm:block text-xs text-gray-500 ml-2 border-l border-gray-700 pl-2">市場總覽</span>
+            <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center text-sm font-bold text-white">S</div>
+            <span className="font-bold text-base text-gray-900">股市分析</span>
+            <span className="hidden sm:block text-xs text-gray-400 ml-2 border-l border-gray-200 pl-2">市場總覽</span>
           </div>
           <div className="flex items-center gap-3">
             {lastUpdate && (
-              <span className="text-xs text-gray-600 hidden sm:block">
-                更新 {lastUpdate}
-              </span>
+              <span className="text-xs text-gray-400 hidden sm:block">更新 {lastUpdate}</span>
             )}
             <Link href="/stocks"
-              className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition-colors">
+              className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition-colors text-white">
               看板 →
             </Link>
           </div>
@@ -122,32 +145,33 @@ export default function HomePage() {
         {/* ── 多國大盤指標 ── */}
         <section>
           <div className="flex items-center gap-2 mb-3">
-            <h2 className="text-sm font-semibold text-gray-300">多國大盤指標</h2>
-            <span className="text-xs text-gray-600">· 60秒自動刷新</span>
+            <h2 className="text-sm font-semibold text-gray-600">多國大盤指標</h2>
+            <span className="text-xs text-gray-400">· 60秒自動刷新</span>
           </div>
           {indicesLoading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-              {Array.from({ length: 10 }).map((_, i) => (
-                <div key={i} className="bg-gray-900/60 border border-gray-800 rounded-xl p-3 animate-pulse h-20" />
+              {Array.from({ length: 7 }).map((_, i) => (
+                <div key={i} className="bg-white border border-gray-100 rounded-xl p-3 animate-pulse h-24 shadow-sm" />
               ))}
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
               {indices.map(idx => (
                 <div key={idx.symbol}
-                  className="bg-gray-900/60 border border-gray-800 hover:border-gray-700 rounded-xl p-3 transition-colors">
+                  className="bg-white border border-gray-100 hover:border-gray-200 rounded-xl p-3 shadow-sm hover:shadow transition-all">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs text-gray-500 flex items-center gap-1">
                       {idx.flag} {idx.label}
                     </span>
                     {idx.marketState === 'REGULAR' && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
                     )}
                   </div>
-                  <div className="text-base font-bold truncate">{idx.price}</div>
-                  <div className={`text-xs font-medium mt-0.5 ${idx.up ? 'text-green-400' : 'text-red-400'}`}>
-                    {idx.changePct} <span className="text-gray-600">({idx.change})</span>
+                  <div className="text-sm font-bold text-gray-900 truncate mb-0.5">{idx.price}</div>
+                  <div className={`text-xs font-semibold mb-2 ${idx.up ? 'text-green-600' : 'text-red-500'}`}>
+                    {idx.changePct}
                   </div>
+                  <MiniSparkline closes={idx.closes} up={idx.up} />
                 </div>
               ))}
             </div>
@@ -158,17 +182,17 @@ export default function HomePage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
           {/* 三大法人資金流向 */}
-          <section className="bg-gray-900/60 border border-gray-800 rounded-xl p-4">
+          <section className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-gray-300">三大法人資金流向</h2>
+              <h2 className="text-sm font-semibold text-gray-700">三大法人資金流向</h2>
               {institutional?.date && (
-                <span className="text-xs text-gray-600">{institutional.date}</span>
+                <span className="text-xs text-gray-400">{institutional.date}</span>
               )}
             </div>
             {instLoading ? (
               <div className="space-y-4">
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="animate-pulse h-10 bg-gray-800 rounded" />
+                  <div key={i} className="animate-pulse h-10 bg-gray-100 rounded" />
                 ))}
               </div>
             ) : institutional ? (
@@ -180,76 +204,76 @@ export default function HomePage() {
                 ].map(row => (
                   <div key={row.label}>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-400">{row.label}</span>
-                      <span className={`text-sm font-bold ${row.raw >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      <span className="text-xs text-gray-500">{row.label}</span>
+                      <span className={`text-sm font-bold ${row.raw >= 0 ? 'text-green-600' : 'text-red-500'}`}>
                         {row.value}
                       </span>
                     </div>
                     <FlowBar value={row.raw} max={maxFlow} />
                   </div>
                 ))}
-                <div className="border-t border-gray-800 pt-3 mt-1">
+                <div className="border-t border-gray-100 pt-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-400">合計</span>
-                    <span className={`text-sm font-bold ${institutional.totalRaw >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    <span className="text-xs font-medium text-gray-600">合計</span>
+                    <span className={`text-sm font-bold ${institutional.totalRaw >= 0 ? 'text-green-600' : 'text-red-500'}`}>
                       {institutional.total}
                     </span>
                   </div>
                 </div>
               </div>
             ) : (
-              <p className="text-xs text-gray-600 text-center py-4">暫無資料（收盤後更新）</p>
+              <p className="text-xs text-gray-400 text-center py-6">暫無資料（收盤後更新）</p>
             )}
           </section>
 
-          {/* 外資買超 top 10 */}
-          <section className="bg-gray-900/60 border border-gray-800 rounded-xl p-4">
-            <h2 className="text-sm font-semibold text-gray-300 mb-3">三大法人 買超 Top 10</h2>
+          {/* 買超 Top 10 */}
+          <section className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <h2 className="text-sm font-semibold text-gray-700">三大法人 買超 Top 10</h2>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-50 text-green-600 font-medium">買</span>
+            </div>
             {instLoading ? (
-              <div className="space-y-2">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="animate-pulse h-7 bg-gray-800 rounded" />
-                ))}
-              </div>
+              <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="animate-pulse h-8 bg-gray-100 rounded" />)}</div>
             ) : topBuy.length === 0 ? (
-              <p className="text-xs text-gray-600 text-center py-4">暫無資料（收盤後更新）</p>
+              <p className="text-xs text-gray-400 text-center py-6">暫無資料（收盤後更新）</p>
             ) : (
               <div className="space-y-1">
                 {topBuy.map((s, i) => (
-                  <div key={s.code} className="flex items-center justify-between py-1 border-b border-gray-800/50 last:border-0">
+                  <div key={s.code} className="flex items-center justify-between py-1.5 border-b border-gray-50 last:border-0">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="text-xs text-gray-600 w-4 flex-shrink-0">{i + 1}</span>
-                      <span className="text-xs font-medium text-gray-400">{s.code}</span>
-                      <span className="text-xs text-gray-500 truncate">{s.name}</span>
+                      <span className="text-[10px] text-gray-300 w-4 flex-shrink-0 font-medium">{i + 1}</span>
+                      <span className="text-xs font-semibold text-gray-700">{s.code}</span>
+                      <span className="text-xs text-gray-400 truncate">{s.name}</span>
+                      {s.isNew && <span className="text-[9px] px-1 py-0.5 rounded bg-green-50 text-green-600 font-bold flex-shrink-0">新買進</span>}
                     </div>
-                    <span className="text-xs font-bold text-green-400 flex-shrink-0 ml-2">{s.net}</span>
+                    <span className="text-xs font-bold text-green-600 flex-shrink-0 ml-2">{s.net}</span>
                   </div>
                 ))}
               </div>
             )}
           </section>
 
-          {/* 外資賣超 top 10 */}
-          <section className="bg-gray-900/60 border border-gray-800 rounded-xl p-4">
-            <h2 className="text-sm font-semibold text-gray-300 mb-3">三大法人 賣超 Top 10</h2>
+          {/* 賣超 Top 10 */}
+          <section className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <h2 className="text-sm font-semibold text-gray-700">三大法人 賣超 Top 10</h2>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-50 text-red-500 font-medium">賣</span>
+            </div>
             {instLoading ? (
-              <div className="space-y-2">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="animate-pulse h-7 bg-gray-800 rounded" />
-                ))}
-              </div>
+              <div className="space-y-2">{Array.from({ length: 8 }).map((_, i) => <div key={i} className="animate-pulse h-7 bg-gray-100 rounded" />)}</div>
             ) : topSell.length === 0 ? (
-              <p className="text-xs text-gray-600 text-center py-4">暫無資料（收盤後更新）</p>
+              <p className="text-xs text-gray-400 text-center py-6">暫無資料（收盤後更新）</p>
             ) : (
               <div className="space-y-1">
                 {topSell.map((s, i) => (
-                  <div key={s.code} className="flex items-center justify-between py-1 border-b border-gray-800/50 last:border-0">
+                  <div key={s.code} className="flex items-center justify-between py-1.5 border-b border-gray-50 last:border-0">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="text-xs text-gray-600 w-4 flex-shrink-0">{i + 1}</span>
-                      <span className="text-xs font-medium text-gray-400">{s.code}</span>
-                      <span className="text-xs text-gray-500 truncate">{s.name}</span>
+                      <span className="text-[10px] text-gray-300 w-4 flex-shrink-0 font-medium">{i + 1}</span>
+                      <span className="text-xs font-semibold text-gray-700">{s.code}</span>
+                      <span className="text-xs text-gray-400 truncate">{s.name}</span>
+                      {s.isNew && <span className="text-[9px] px-1 py-0.5 rounded bg-red-50 text-red-500 font-bold flex-shrink-0">新賣出</span>}
                     </div>
-                    <span className="text-xs font-bold text-red-400 flex-shrink-0 ml-2">{s.net}</span>
+                    <span className="text-xs font-bold text-red-500 flex-shrink-0 ml-2">{s.net}</span>
                   </div>
                 ))}
               </div>
@@ -258,13 +282,13 @@ export default function HomePage() {
         </div>
 
         {/* ── CTA ── */}
-        <section className="bg-gradient-to-r from-blue-600/10 to-purple-600/5 border border-blue-500/20 rounded-xl px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <section className="bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
           <div>
-            <h3 className="font-semibold text-sm mb-1">查看個股詳情</h3>
-            <p className="text-xs text-gray-500">TradingView K線圖 · 技術指標評分 · 財務數據</p>
+            <h3 className="font-semibold text-sm mb-1 text-white">查看個股詳情</h3>
+            <p className="text-xs text-blue-100">TradingView K線圖 · 技術指標評分 · 財務數據</p>
           </div>
           <Link href="/stocks"
-            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-semibold transition-all hover:scale-105 whitespace-nowrap">
+            className="px-6 py-2.5 bg-white text-blue-600 hover:bg-blue-50 rounded-lg text-sm font-semibold transition-all hover:scale-105 whitespace-nowrap shadow">
             進入看板 →
           </Link>
         </section>
@@ -272,7 +296,7 @@ export default function HomePage() {
       </div>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-gray-800 py-6 text-center text-xs text-gray-600 mt-8">
+      <footer className="border-t border-gray-200 py-6 text-center text-xs text-gray-400 mt-8">
         大盤資料：Yahoo Finance　·　法人資料：臺灣證券交易所　·　完全免費開源
       </footer>
 

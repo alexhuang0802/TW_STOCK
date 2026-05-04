@@ -3,30 +3,27 @@ import { NextResponse } from 'next/server';
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
 
 const INDICES = [
-  { symbol: '^TWII',     label: '台股加權',   flag: '🇹🇼' },
-  { symbol: '^GSPC',     label: 'S&P 500',    flag: '🇺🇸' },
-  { symbol: '^IXIC',     label: 'NASDAQ',     flag: '🇺🇸' },
-  { symbol: '^DJI',      label: 'DOW',        flag: '🇺🇸' },
-  { symbol: '^N225',     label: '日經225',    flag: '🇯🇵' },
-  { symbol: '^HSI',      label: '恆生',       flag: '🇭🇰' },
-  { symbol: '000001.SS', label: '上證',       flag: '🇨🇳' },
-  { symbol: '^KS11',     label: '韓國KOSPI',  flag: '🇰🇷' },
-  { symbol: '^FTSE',     label: 'FTSE 100',   flag: '🇬🇧' },
-  { symbol: '^GDAXI',    label: 'DAX',        flag: '🇩🇪' },
+  { symbol: '^TWII', label: '台股加權', flag: '🇹🇼' },
+  { symbol: '^GSPC', label: 'S&P 500',  flag: '🇺🇸' },
+  { symbol: '^IXIC', label: 'NASDAQ',   flag: '🇺🇸' },
+  { symbol: '^DJI',  label: 'DOW',      flag: '🇺🇸' },
+  { symbol: '^N225', label: '日經225',  flag: '🇯🇵' },
 ];
 
 async function fetchIndex(symbol: string) {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=1d`;
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=1mo`;
   const res = await fetch(url, { headers: { 'User-Agent': UA } });
   if (!res.ok) return null;
   const data = await res.json();
-  const meta = data.chart?.result?.[0]?.meta;
-  if (!meta) return null;
-  const prev = meta.chartPreviousClose ?? meta.previousClose ?? meta.regularMarketPrice;
+  const result = data.chart?.result?.[0];
+  if (!result) return null;
+  const meta = result.meta;
+  const closes: number[] = (result.indicators?.quote?.[0]?.close ?? []).filter((v: number | null) => v != null);
+  const prev = meta.chartPreviousClose ?? meta.previousClose ?? (closes[closes.length - 2] ?? meta.regularMarketPrice);
   const price = meta.regularMarketPrice as number;
   const change = price - prev;
   const changePct = prev ? (change / prev) * 100 : 0;
-  return { symbol, price, change, changePct, marketState: meta.marketState ?? 'CLOSED' };
+  return { symbol, price, change, changePct, closes, marketState: meta.marketState ?? 'CLOSED' };
 }
 
 export async function GET() {
@@ -44,6 +41,7 @@ export async function GET() {
       change: q ? (up ? '+' : '') + q.change.toFixed(2) : 'N/A',
       changePct: q ? (up ? '+' : '') + q.changePct.toFixed(2) + '%' : 'N/A',
       up,
+      closes: q?.closes ?? [],
       marketState: q?.marketState ?? 'CLOSED',
     };
   });
