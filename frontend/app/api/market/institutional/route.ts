@@ -3,12 +3,16 @@ import { NextResponse } from 'next/server';
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
 
 function parseAmount(s: string): number {
-  return parseInt(s.replace(/,/g, ''), 10) || 0;
+  return parseInt((s ?? '').replace(/,/g, ''), 10) || 0;
 }
 
 function fmtBillion(n: number): string {
   const b = n / 1e8;
   return (b >= 0 ? '+' : '') + b.toFixed(2) + '億';
+}
+
+function fmtShares(n: number): string {
+  return (n >= 0 ? '+' : '') + n.toLocaleString() + '股';
 }
 
 function dateStr(d: Date): string {
@@ -34,25 +38,71 @@ async function findLatestTradingDate(startDate: Date, maxTries = 5): Promise<{ d
   return { date: dateStr(startDate), data: [] };
 }
 
-// Fetch T86 data (individual stock institutional flow) for a given date
-async function fetchT86(date: string): Promise<Map<string, number>> {
+// T86 column indices:
+// r[0]=代號 r[1]=名稱
+// r[2]=外資買進 r[3]=外資賣出 r[4]=外資淨
+// r[5]=外資自營商買進 r[6]=外資自營商賣出 r[7]=外資自營商淨
+// r[8]=投信買進 r[9]=投信賣出 r[10]=投信淨
+// r[11]=自營商(自行)買進 r[12]=自營商(自行)賣出 r[13]=自營商(自行)淨
+// r[14]=自營商(避險)買進 r[15]=自營商(避險)賣出 r[16]=自營商(避險)淨
+// r[17]=三大法人淨
+
+interface PrevEntry { foreignNet: number; trustNet: number; dealerNet: number; }
+
+async function fetchT86WithDetail(date: string): Promise<Map<string, PrevEntry>> {
   const url = `https://www.twse.com.tw/rwd/zh/fund/T86?date=${date}&selectType=ALLBUT0999&response=json`;
   const res = await fetch(url, { headers: { 'User-Agent': UA } });
   if (!res.ok) return new Map();
   const d = await res.json();
-  const map = new Map<string, number>();
+  const map = new Map<string, PrevEntry>();
   for (const r of d.data ?? []) {
-    const code: string = r[0];
-    // col 16 = 三大法人合計買賣超股數
-    const net = parseAmount(r[16] ?? '0');
-    map.set(code, net);
+    map.set(r[0], {
+      foreignNet: parseAmount(r[4]),
+      trustNet:   parseAmount(r[10]),
+      dealerNet:  parseAmount(r[13]) + parseAmount(r[16]),
+    });
   }
   return map;
 }
 
+type StockRow = { code: string; name: string; raw: number; label: string; isNew: boolean };
+
+function makeTopLists(rows: string[][], buyCol: number, sellCol: number, netCol: number,
+  prevMap: Map<string, PrevEntry>, getNet: (e: PrevEntry) => number
+): { topBuy: StockRow[]; topSell: StockRow[] } {
+  const parsed = rows.map(r => ({
+    code: r[0], name: r[1],
+    buyRaw:  parseAmount(r[buyCol]),
+    sellRaw: parseAmount(r[sellCol]),
+    netNow:  parseAmount(r[netCol]),
+    prevNet: getNet(prevMap.get(r[0]) ?? { foreignNet: 0, trustNet: 0, dealerNet: 0 }),
+  }));
+
+  const topBuy = [...parsed]
+    .sort((a, b) => b.buyRaw - a.buyRaw)
+    .slice(0, 5)
+    .map(s => ({
+      code: s.code, name: s.name, raw: s.buyRaw,
+      label: fmtShares(s.buyRaw),
+      isNew: s.netNow > 0 && s.prevNet <= 0,
+    }));
+
+  const topSell = [...parsed]
+    .sort((a, b) => b.sellRaw - a.sellRaw)
+    .slice(0, 5)
+    .map(s => ({
+      code: s.code, name: s.name, raw: s.sellRaw,
+      label: fmtShares(s.sellRaw),
+      isNew: s.netNow < 0 && s.prevNet >= 0,
+    }));
+
+  return { topBuy, topSell };
+}
+
 export async function GET() {
   const today = new Date();
-  // Find latest available trading date (falls back to yesterday if today has no data yet)
+
+  // Find latest available trading date
   const { date: latestDate, data: summaryRows } = await findLatestTradingDate(today);
 
   // ~10 trading days ago ≈ 14 calendar days before latest date
@@ -62,12 +112,15 @@ export async function GET() {
     parseInt(latestDate.slice(6, 8))
   );
   prevDate.setDate(prevDate.getDate() - 14);
-  const prevStr = dateStr(prevDate);
 
-  // Fetch T86 for comparison date (10 trading days ago)
-  const prevMap = await fetchT86(prevStr);
+  // Fetch T86 for latest date and comparison date
+  const [topRes, prevMap] = await Promise.all([
+    fetch(`https://www.twse.com.tw/rwd/zh/fund/T86?date=${latestDate}&selectType=ALLBUT0999&response=json`,
+      { headers: { 'User-Agent': UA } }),
+    fetchT86WithDetail(dateStr(prevDate)),
+  ]);
 
-  // ── Summary (三大法人總表) ──────────────────────────────
+  // ── Summary ──────────────────────────────────────────────────────────────
   let summary = { foreign: 0, trust: 0, dealer: 0, total: 0, date: latestDate };
   for (const row of summaryRows as string[][]) {
     const name: string = row[0];
@@ -78,53 +131,31 @@ export async function GET() {
   }
   summary.total = summary.foreign + summary.trust + summary.dealer;
 
-  // ── Individual stock top buys / sells ──────────────────
-  const url = `https://www.twse.com.tw/rwd/zh/fund/T86?date=${latestDate}&selectType=ALLBUT0999&response=json`;
-  const topRes = await fetch(url, { headers: { 'User-Agent': UA } });
-
-  let topBuy: { code: string; name: string; net: string; netRaw: number; isNew: boolean }[] = [];
-  let topSell: { code: string; name: string; net: string; netRaw: number; isNew: boolean }[] = [];
+  // ── Individual stock top buys / sells by institution ─────────────────────
+  let foreign = { topBuy: [] as StockRow[], topSell: [] as StockRow[] };
+  let trust   = { topBuy: [] as StockRow[], topSell: [] as StockRow[] };
+  let dealer  = { topBuy: [] as StockRow[], topSell: [] as StockRow[] };
 
   if (topRes.ok) {
     const d = await topRes.json();
-    type Row = string[];
-    const rows: Row[] = d.data ?? [];
-    const stocks = rows.map(r => {
-      const code = r[0];
-      const name = r[1];
-      const netRaw = parseAmount(r[16] ?? '0');
-      const prevNet = prevMap.get(code) ?? 0;
-      // "新買進": buying today but was selling (or zero) 10 days ago
-      // "新賣出": selling today but was buying (or zero) 10 days ago
-      const isNew = netRaw > 0 ? prevNet <= 0 : prevNet >= 0;
-      return { code, name, netRaw, net: '', isNew };
-    }).filter(s => !isNaN(s.netRaw));
+    const rows: string[][] = d.data ?? [];
 
-    stocks.sort((a, b) => b.netRaw - a.netRaw);
-
-    topBuy = stocks.slice(0, 5).map(s => ({
-      ...s,
-      net: (s.netRaw >= 0 ? '+' : '') + s.netRaw.toLocaleString(),
-    }));
-    topSell = stocks.slice(-5).reverse().map(s => ({
-      ...s,
-      net: s.netRaw.toLocaleString(),
-    }));
+    foreign = makeTopLists(rows, 2, 3, 4,  prevMap, e => e.foreignNet);
+    trust   = makeTopLists(rows, 8, 9, 10, prevMap, e => e.trustNet);
+    // 自營商: combine 自行買賣 (cols 11,12,13) + 避險 (cols 14,15,16)
+    dealer  = makeTopLists(rows, 11, 12, 13, prevMap, e => e.dealerNet);
   }
 
   return NextResponse.json({
     summary: {
-      date: summary.date,
-      foreign: fmtBillion(summary.foreign),
-      foreignRaw: summary.foreign,
-      trust: fmtBillion(summary.trust),
-      trustRaw: summary.trust,
-      dealer: fmtBillion(summary.dealer),
-      dealerRaw: summary.dealer,
-      total: fmtBillion(summary.total),
-      totalRaw: summary.total,
+      date: latestDate,
+      foreign: fmtBillion(summary.foreign), foreignRaw: summary.foreign,
+      trust:   fmtBillion(summary.trust),   trustRaw:   summary.trust,
+      dealer:  fmtBillion(summary.dealer),  dealerRaw:  summary.dealer,
+      total:   fmtBillion(summary.total),   totalRaw:   summary.total,
     },
-    topBuy,
-    topSell,
+    foreign,
+    trust,
+    dealer,
   });
 }
