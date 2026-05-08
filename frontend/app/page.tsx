@@ -267,9 +267,12 @@ export default function HomePage() {
                       <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
                     )}
                   </div>
-                  <div className="text-sm font-bold text-gray-900 truncate mb-0.5">{idx.price}</div>
-                  <div className={`text-xs font-semibold mb-2 ${idx.up ? 'text-green-600' : 'text-red-500'}`}>
+                  <div className="text-sm font-bold text-gray-900 truncate">{idx.price}</div>
+                  <div className={`text-xs font-semibold ${idx.up ? 'text-green-600' : 'text-red-500'}`}>
                     {idx.changePct}
+                  </div>
+                  <div className={`text-[10px] mb-1 ${idx.up ? 'text-green-500' : 'text-red-400'}`}>
+                    {idx.change}
                   </div>
                   <MiniSparkline closes={idx.closes} up={idx.up} />
                 </div>

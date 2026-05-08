@@ -53,14 +53,11 @@ async function fetchTWT44U(date: string): Promise<string[][]> {
   return j.data ?? [];
 }
 
-// ── 外資 TWT38U (金額) ─────────────────────────────────────────────────────
-// fields: r[0]=代號 r[1]=名稱 r[2]=買進金額 r[3]=賣出金額 r[4]=買賣超金額
-async function fetchTWT38U(date: string): Promise<string[][]> {
-  const url = `https://www.twse.com.tw/rwd/zh/fund/TWT38U?date=${date}&response=json`;
-  const res = await fetch(url, { headers: { 'User-Agent': UA } });
-  if (!res.ok) return [];
-  const j = await res.json();
-  return j.data ?? [];
+// ── 外資 T86 (股數) ────────────────────────────────────────────────────────
+// T86 cols: r[2]=外資買進 r[3]=外資賣出 r[4]=外資淨 (不含外資自營商)
+// reuse fetchT86Dealer, just need the same data
+async function fetchT86Foreign(date: string): Promise<string[][]> {
+  return fetchT86Dealer(date); // same endpoint, different columns used
 }
 
 // ── 自營商 T86 ─────────────────────────────────────────────────────────────
@@ -80,9 +77,9 @@ function netMapFrom44U(rows: string[][]): Map<string, number> {
   rows.forEach(r => m.set(r[0], parseAmt(r[4])));
   return m;
 }
-function netMapFrom38U(rows: string[][]): Map<string, number> {
+function netMapForeignFromT86(rows: string[][]): Map<string, number> {
   const m = new Map<string, number>();
-  rows.forEach(r => m.set(r[0], parseAmt(r[4])));
+  rows.forEach(r => m.set(r[0], parseAmt(r[4]))); // col4 = 外資淨
   return m;
 }
 function netMapDealerFromT86(rows: string[][]): Map<string, number> {
@@ -201,16 +198,12 @@ export async function GET() {
   // Fetch all data concurrently
   const [
     trust44U, trustRef5, trustRef10,
-    foreign38U, foreignRef5, foreignRef10,
-    dealerT86, dealerRef5, dealerRef10,
+    t86Today, t86Ref5, t86Ref10,
   ] = await Promise.all([
     fetchTWT44U(latestDate),
     fetchTWT44U(ref5Date),
     fetchTWT44U(ref10Date),
-    fetchTWT38U(latestDate),
-    fetchTWT38U(ref5Date),
-    fetchTWT38U(ref10Date),
-    fetchT86Dealer(latestDate),
+    fetchT86Dealer(latestDate),   // used for both 外資 and 自營商
     fetchT86Dealer(ref5Date),
     fetchT86Dealer(ref10Date),
   ]);
@@ -227,13 +220,14 @@ export async function GET() {
   summary.total = summary.foreign + summary.trust + summary.dealer;
 
   // ── Build top lists ───────────────────────────────────────────────────────
-  const trustRefMaps    = [netMapFrom44U(trustRef5),    netMapFrom44U(trustRef10)];
-  const foreignRefMaps  = [netMapFrom38U(foreignRef5),  netMapFrom38U(foreignRef10)];
-  const dealerRefMaps   = [netMapDealerFromT86(dealerRef5), netMapDealerFromT86(dealerRef10)];
+  const trustRefMaps   = [netMapFrom44U(trustRef5),         netMapFrom44U(trustRef10)];
+  const foreignRefMaps = [netMapForeignFromT86(t86Ref5),    netMapForeignFromT86(t86Ref10)];
+  const dealerRefMaps  = [netMapDealerFromT86(t86Ref5),     netMapDealerFromT86(t86Ref10)];
 
-  const trust   = trust44U.length  > 0 ? makeTop5(trust44U,  2, 3, 4, trustRefMaps)  : { topBuy: [], topSell: [] };
-  const foreign = foreign38U.length > 0 ? makeTop5(foreign38U, 2, 3, 4, foreignRefMaps) : { topBuy: [], topSell: [] };
-  const dealer  = dealerT86.length  > 0 ? makeTop5Dealer(dealerT86, dealerRefMaps)     : { topBuy: [], topSell: [] };
+  // 外資: T86 cols r[2]=買進股數 r[3]=賣出股數 r[4]=淨
+  const trust   = trust44U.length > 0 ? makeTop5(trust44U, 2, 3, 4, trustRefMaps)  : { topBuy: [], topSell: [] };
+  const foreign = t86Today.length  > 0 ? makeTop5(t86Today, 2, 3, 4, foreignRefMaps) : { topBuy: [], topSell: [] };
+  const dealer  = t86Today.length  > 0 ? makeTop5Dealer(t86Today, dealerRefMaps)      : { topBuy: [], topSell: [] };
 
   return NextResponse.json({
     summary: {

@@ -19,10 +19,10 @@ async function fetchIndex(symbol: string) {
   if (!result) return null;
   const meta = result.meta;
   const closes: number[] = (result.indicators?.quote?.[0]?.close ?? []).filter((v: number | null) => v != null);
-  const prev = meta.chartPreviousClose ?? meta.previousClose ?? (closes[closes.length - 2] ?? meta.regularMarketPrice);
   const price = meta.regularMarketPrice as number;
-  const change = price - prev;
-  const changePct = prev ? (change / prev) * 100 : 0;
+  // Use Yahoo's own today-change fields first; fall back to prev-close calculation
+  const change    = meta.regularMarketChange    ?? (price - (meta.chartPreviousClose ?? meta.previousClose ?? price));
+  const changePct = meta.regularMarketChangePercent ?? (meta.chartPreviousClose ? change / meta.chartPreviousClose * 100 : 0);
   return { symbol, price, change, changePct, closes, marketState: meta.marketState ?? 'CLOSED' };
 }
 
