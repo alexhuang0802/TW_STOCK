@@ -27,27 +27,40 @@ function shiftDays(base: Date, delta: number): Date {
   return d;
 }
 
+// 週六/週日 → 往回推到上週五
+function lastWeekday(d: Date): Date {
+  const r = new Date(d);
+  const dow = r.getDay();
+  if (dow === 0) r.setDate(r.getDate() - 2);
+  else if (dow === 6) r.setDate(r.getDate() - 1);
+  return r;
+}
+
 // ── 三大法人彙總 (BFI82U) ───────────────────────────────────────────────────
 async function findLatestSummary(startDate: Date): Promise<{ date: string; rows: string[][] }> {
-  const d = new Date(startDate);
-  for (let i = 0; i < 7; i++) {
+  const d = lastWeekday(new Date(startDate));
+  for (let i = 0; i < 10; i++) {
+    // 跳過週末
+    while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() - 1);
     const ds = dateStr(d);
     const url = `https://www.twse.com.tw/rwd/zh/fund/BFI82U?response=json&type=day&date=${ds}`;
-    const res = await fetch(url, { headers: { 'User-Agent': UA } });
-    if (res.ok) {
-      const j = await res.json();
-      if ((j.data ?? []).length > 0) return { date: ds, rows: j.data };
-    }
+    try {
+      const res = await fetch(url, { headers: { 'User-Agent': UA }, cache: 'no-store' });
+      if (res.ok) {
+        const j = await res.json();
+        if ((j.data ?? []).length > 0) return { date: ds, rows: j.data };
+      }
+    } catch { /* ignore network errors */ }
     d.setDate(d.getDate() - 1);
   }
-  return { date: dateStr(startDate), rows: [] };
+  return { date: dateStr(lastWeekday(startDate)), rows: [] };
 }
 
 // ── 投信 TWT44U (金額) ─────────────────────────────────────────────────────
 // fields: r[0]=代號 r[1]=名稱 r[2]=買進金額 r[3]=賣出金額 r[4]=買賣超金額
 async function fetchTWT44U(date: string): Promise<string[][]> {
   const url = `https://www.twse.com.tw/rwd/zh/fund/TWT44U?date=${date}&response=json`;
-  const res = await fetch(url, { headers: { 'User-Agent': UA } });
+  const res = await fetch(url, { headers: { 'User-Agent': UA }, cache: 'no-store' });
   if (!res.ok) return [];
   const j = await res.json();
   return j.data ?? [];
@@ -65,7 +78,7 @@ async function fetchT86Foreign(date: string): Promise<string[][]> {
 // 自行: r[11]=買 r[12]=賣 r[13]=淨  避險: r[14]=買 r[15]=賣 r[16]=淨
 async function fetchT86Dealer(date: string): Promise<string[][]> {
   const url = `https://www.twse.com.tw/rwd/zh/fund/T86?date=${date}&selectType=ALLBUT0999&response=json`;
-  const res = await fetch(url, { headers: { 'User-Agent': UA } });
+  const res = await fetch(url, { headers: { 'User-Agent': UA }, cache: 'no-store' });
   if (!res.ok) return [];
   const j = await res.json();
   return j.data ?? [];
