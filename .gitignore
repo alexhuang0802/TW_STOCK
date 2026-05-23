@@ -24,3 +24,8 @@ __pycache__/
 # 系統檔
 .DS_Store
 Thumbs.db
+
+# 快取與暫存資料
+*.pkl
+inst.json
+.vercel/

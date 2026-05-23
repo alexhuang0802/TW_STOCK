@@ -20,9 +20,12 @@ async function fetchIndex(symbol: string) {
   const meta = result.meta;
   const closes: number[] = (result.indicators?.quote?.[0]?.close ?? []).filter((v: number | null) => v != null);
   const price = meta.regularMarketPrice as number;
-  // Use Yahoo's own today-change fields first; fall back to prev-close calculation
-  const change    = meta.regularMarketChange    ?? (price - (meta.chartPreviousClose ?? meta.previousClose ?? price));
-  const changePct = meta.regularMarketChangePercent ?? (meta.chartPreviousClose ? change / meta.chartPreviousClose * 100 : 0);
+  // Use last two closes for "most recent completed session" change
+  // closes[last] = most recent close; closes[last-1] = previous close
+  const lastClose = closes[closes.length - 1] ?? price;
+  const prevClose = closes[closes.length - 2] ?? lastClose;
+  const change    = lastClose - prevClose;
+  const changePct = prevClose ? change / prevClose * 100 : 0;
   return { symbol, price, change, changePct, closes, marketState: meta.marketState ?? 'CLOSED' };
 }
 
