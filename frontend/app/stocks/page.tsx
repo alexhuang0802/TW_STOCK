@@ -34,19 +34,6 @@ interface Financials {
   roe: string; roa: string; debtToEquity: string; currentRatio: string;
   priceToBook: string; dividendYield: string; beta: string; shortRatio: string;
 }
-interface TradingPlan {
-  symbol: string; name: string; currentPrice: number; change: number; changePct: number;
-  trendDirection: string;
-  trendAnalysis: string[];
-  keyLevels: { breakoutAbove: number; resistance1: number; resistance2: number; support1: number; support2: number; strongSupport: number; };
-  bullStrategy: { condition: string; entryRange: string; target1: number; target2: number; stopLoss: number; };
-  bearStrategy: { condition: string; entryRange: string; target1: number; target2: number; stopLoss: number; };
-  riskManagement: string[];
-  entryPlan: { scenario: string; entryCondition: string; entryRange: string; stopLoss: number; target1: number; target2: number; rrRatio: string; }[];
-  executionDiscipline: string[];
-  observations: string[];
-  notes: string[];
-}
 
 // ── Constants ─────────────────────────────────────────────────────────────
 const DEFAULT_WATCHLIST = ['2330.TW', '0050.TW', '2454.TW', '0056.TW', 'AAPL', 'NVDA', 'TSM', 'MSFT'];
@@ -180,259 +167,6 @@ function IndicatorCard({ label, value }: { label: string; value: string }) {
   );
 }
 
-// ── Trading Plan Modal ────────────────────────────────────────────────────
-function TradingPlanModal({ plan, onClose, onRegenerate, loading }: {
-  plan: TradingPlan; onClose: () => void; onRegenerate: () => void; loading: boolean;
-}) {
-  const pos = plan.changePct >= 0;
-  const f = (n: number | null | undefined, d = 2) => (n == null || isNaN(n as number)) ? '-' : (n as number).toFixed(d);
-  const today = new Date().toLocaleDateString('zh-TW');
-
-  return (
-    <div className="fixed inset-0 z-[200] bg-black/95 overflow-y-auto">
-      <div className="min-h-screen p-4 pb-10">
-
-        {/* Floating action buttons */}
-        <div className="fixed top-4 right-4 z-[201] flex items-center gap-2">
-          <button onClick={onRegenerate} disabled={loading}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-700 hover:bg-indigo-600 disabled:opacity-40 rounded-lg text-xs text-white transition-colors shadow-lg">
-            {loading ? <><span className="w-3 h-3 border border-white/50 border-t-white rounded-full animate-spin inline-block" /> 生成中…</> : '↺ 重新生成'}
-          </button>
-          <button onClick={onClose}
-            className="w-8 h-8 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center text-gray-300 hover:text-white transition-colors text-lg leading-none">
-            ×
-          </button>
-        </div>
-
-        <div className="max-w-6xl mx-auto">
-
-          {/* ── Header ── */}
-          <div className="bg-[#0d1520] border border-[#1e2d45] rounded-xl p-4 mb-4">
-            <div className="flex flex-wrap items-start gap-4">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <h2 className="text-xl font-bold text-white">{base(plan.symbol)} {plan.name}</h2>
-                  <span className="text-sm text-blue-400 font-semibold">交易計畫</span>
-                </div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[10px] px-2 py-0.5 bg-gray-800 rounded text-gray-400">更新日期 {today}</span>
-                  <span className="text-[10px] px-2 py-0.5 bg-gray-800 rounded text-gray-400">週期：日線</span>
-                </div>
-              </div>
-              <div className="ml-auto flex items-center gap-6 flex-wrap">
-                <div>
-                  <div className="text-[10px] text-gray-500 mb-0.5">目前股價</div>
-                  <div className="text-2xl font-bold text-white">{f(plan.currentPrice)}</div>
-                </div>
-                <div>
-                  <div className="text-[10px] text-gray-500 mb-0.5">漲跌</div>
-                  <div className={`text-base font-bold ${pos ? 'text-green-400' : 'text-red-400'}`}>
-                    {pos ? '▲' : '▼'}{Math.abs(plan.change).toFixed(2)}&nbsp;
-                    <span className="text-sm">({pos ? '+' : ''}{plan.changePct.toFixed(2)}%)</span>
-                  </div>
-                </div>
-                <div>
-                  <div className="text-[10px] text-gray-500 mb-0.5">趨勢方向</div>
-                  <div className="text-sm font-bold text-yellow-400">{plan.trendDirection}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Main Grid ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-4">
-
-            {/* Left column */}
-            <div className="space-y-4">
-
-              {/* 1. 趨勢判斷 */}
-              <div className="bg-[#0d1520] border border-[#1e2d45] rounded-xl p-4">
-                <div className="text-[10px] text-blue-400 font-semibold uppercase tracking-wider mb-3">1. 趨勢判斷</div>
-                <ul className="space-y-2">
-                  {plan.trendAnalysis.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2 text-xs text-gray-300 leading-relaxed">
-                      <span className="text-blue-500 mt-0.5 flex-shrink-0 font-bold">·</span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* 2. 關鍵價位 */}
-              <div className="bg-[#0d1520] border border-[#1e2d45] rounded-xl p-4">
-                <div className="text-[10px] text-blue-400 font-semibold uppercase tracking-wider mb-3">2. 關鍵價位</div>
-                <div className="space-y-1.5">
-                  {[
-                    { label: '突破上關價', val: plan.keyLevels.breakoutAbove, color: 'text-red-400', dash: 'border-red-400/40' },
-                    { label: '壓力 1',     val: plan.keyLevels.resistance1,   color: 'text-orange-400', dash: 'border-orange-400/40' },
-                    { label: '壓力 2',     val: plan.keyLevels.resistance2,   color: 'text-orange-300', dash: 'border-orange-300/40' },
-                  ].map(({ label, val, color, dash }) => (
-                    <div key={label} className="flex items-center gap-1">
-                      <span className={`text-[11px] ${color} w-20 flex-shrink-0`}>{label}</span>
-                      <span className={`flex-1 border-b border-dashed ${dash}`} />
-                      <span className={`text-xs font-bold ${color} w-14 text-right`}>{f(val)}</span>
-                    </div>
-                  ))}
-
-                  <div className="flex items-center gap-2 py-1">
-                    <div className="flex-1 h-px bg-blue-500/40" />
-                    <span className="text-[11px] text-blue-400 font-bold whitespace-nowrap">{f(plan.currentPrice)} ←現價</span>
-                    <div className="flex-1 h-px bg-blue-500/40" />
-                  </div>
-
-                  {[
-                    { label: '支撐 1',   val: plan.keyLevels.support1,      color: 'text-green-400', dash: 'border-green-400/40' },
-                    { label: '支撐 2',   val: plan.keyLevels.support2,      color: 'text-green-300', dash: 'border-green-300/40' },
-                    { label: '強力支撐', val: plan.keyLevels.strongSupport,  color: 'text-gray-500',  dash: 'border-gray-600' },
-                  ].map(({ label, val, color, dash }) => (
-                    <div key={label} className="flex items-center gap-1">
-                      <span className={`text-[11px] ${color} w-20 flex-shrink-0`}>{label}</span>
-                      <span className={`flex-1 border-b border-dashed ${dash}`} />
-                      <span className={`text-xs font-bold ${color} w-14 text-right`}>{f(val)}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* 4. 交易策略 */}
-              <div className="bg-[#0d1520] border border-[#1e2d45] rounded-xl p-4">
-                <div className="text-[10px] text-blue-400 font-semibold uppercase tracking-wider mb-3">4. 交易策略</div>
-                <div className="space-y-3">
-                  <div>
-                    <div className="text-[10px] font-bold text-green-400 mb-1.5 flex items-center gap-1.5">
-                      <span className="px-1.5 py-0.5 bg-green-900/50 rounded">多頭策略</span>
-                    </div>
-                    <div className="space-y-1 pl-2 text-[11px]">
-                      <div><span className="text-gray-500">條件：</span><span className="text-gray-200">{plan.bullStrategy.condition}</span></div>
-                      <div><span className="text-gray-500">進場：</span><span className="text-gray-200">回測 {plan.bullStrategy.entryRange}</span></div>
-                      <div><span className="text-gray-500">目標：</span><span className="text-green-300">{f(plan.bullStrategy.target1)} / {f(plan.bullStrategy.target2)}</span></div>
-                      <div><span className="text-gray-500">停損：</span><span className="text-red-400">跌破 {f(plan.bullStrategy.stopLoss)}</span></div>
-                    </div>
-                  </div>
-                  <div className="border-t border-gray-800/80" />
-                  <div>
-                    <div className="text-[10px] font-bold text-red-400 mb-1.5 flex items-center gap-1.5">
-                      <span className="px-1.5 py-0.5 bg-red-900/50 rounded">空頭策略</span>
-                    </div>
-                    <div className="space-y-1 pl-2 text-[11px]">
-                      <div><span className="text-gray-500">條件：</span><span className="text-gray-200">{plan.bearStrategy.condition}</span></div>
-                      <div><span className="text-gray-500">進場：</span><span className="text-gray-200">{plan.bearStrategy.entryRange}</span></div>
-                      <div><span className="text-gray-500">目標：</span><span className="text-red-300">{f(plan.bearStrategy.target1)} / {f(plan.bearStrategy.target2)}</span></div>
-                      <div><span className="text-gray-500">停損：</span><span className="text-green-400">站回 {f(plan.bearStrategy.stopLoss)}</span></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 5. 風險管理 */}
-              <div className="bg-[#0d1520] border border-[#1e2d45] rounded-xl p-4">
-                <div className="text-[10px] text-blue-400 font-semibold uppercase tracking-wider mb-3">5. 風險管理</div>
-                <ul className="space-y-2">
-                  {plan.riskManagement.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2 text-xs text-gray-300 leading-relaxed">
-                      <span className="text-yellow-500 mt-0.5 flex-shrink-0">·</span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            {/* Right column */}
-            <div className="space-y-4">
-
-              {/* 6. 進場計畫 */}
-              <div className="bg-[#0d1520] border border-[#1e2d45] rounded-xl p-4">
-                <div className="text-[10px] text-blue-400 font-semibold uppercase tracking-wider mb-3">6. 進場計畫（範例）</div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs">
-                    <thead>
-                      <tr className="border-b border-gray-800">
-                        {['情境','進場條件','進場區間','停損','目標1','目標2','盈虧比'].map(h => (
-                          <th key={h} className="text-left text-[10px] text-gray-500 pb-2 pr-3 font-medium whitespace-nowrap last:text-right">{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {plan.entryPlan.map((row, i) => {
-                        const bull = row.scenario === '多頭';
-                        return (
-                          <tr key={i} className="border-b border-gray-800/40">
-                            <td className="py-2.5 pr-3">
-                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${bull ? 'bg-green-900/60 text-green-400' : 'bg-red-900/60 text-red-400'}`}>
-                                {row.scenario}
-                              </span>
-                            </td>
-                            <td className="py-2.5 pr-3 text-gray-300 max-w-[180px]">{row.entryCondition}</td>
-                            <td className="py-2.5 pr-3 text-gray-100 font-semibold whitespace-nowrap">{row.entryRange}</td>
-                            <td className={`py-2.5 pr-3 font-bold whitespace-nowrap ${bull ? 'text-red-400' : 'text-green-400'}`}>{f(row.stopLoss)}</td>
-                            <td className={`py-2.5 pr-3 font-bold whitespace-nowrap ${bull ? 'text-green-400' : 'text-red-400'}`}>{f(row.target1)}</td>
-                            <td className={`py-2.5 pr-3 font-bold whitespace-nowrap ${bull ? 'text-green-300' : 'text-red-300'}`}>{f(row.target2)}</td>
-                            <td className="py-2.5 text-right text-yellow-400 font-semibold whitespace-nowrap">{row.rrRatio}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                  <p className="text-[10px] text-gray-600 mt-2">※ 價位為參考，依盤中走勢彈性調整</p>
-                </div>
-              </div>
-
-              {/* 7. 執行紀律 */}
-              <div className="bg-[#0d1520] border border-[#1e2d45] rounded-xl p-4">
-                <div className="text-[10px] text-blue-400 font-semibold uppercase tracking-wider mb-3">7. 執行紀律</div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {plan.executionDiscipline.map((item, i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-blue-600/20 border border-blue-500/40 rounded flex items-center justify-center flex-shrink-0">
-                        <span className="text-blue-400 text-[9px] font-bold">✓</span>
-                      </div>
-                      <span className="text-xs text-gray-300 leading-relaxed">{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* 8 & 9 side by side */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-[#0d1520] border border-[#1e2d45] rounded-xl p-4">
-                  <div className="text-[10px] text-blue-400 font-semibold uppercase tracking-wider mb-3">8. 觀察重點</div>
-                  <div className="space-y-2">
-                    {plan.observations.map((item, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-green-600/20 border border-green-500/40 rounded flex items-center justify-center flex-shrink-0">
-                          <span className="text-green-400 text-[9px] font-bold">✓</span>
-                        </div>
-                        <span className="text-xs text-gray-300 leading-relaxed">{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="bg-[#0d1520] border border-[#1e2d45] rounded-xl p-4">
-                  <div className="text-[10px] text-blue-400 font-semibold uppercase tracking-wider mb-3">9. 備註</div>
-                  <ul className="space-y-2">
-                    {plan.notes.map((item, i) => (
-                      <li key={i} className="flex items-start gap-2 text-xs text-gray-400 leading-relaxed">
-                        <span className="text-gray-600 mt-0.5 flex-shrink-0">·</span>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="mt-6 text-center border-t border-gray-800 pt-4">
-            <p className="text-[11px] text-gray-600 tracking-widest">◎ 核心原則：順勢操作・嚴設停損・控管風險・紀律執行</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ── Analyst Panel ─────────────────────────────────────────────────────────
 function AnalystPanel({ data, loading }: { data: Analyst | null; loading: boolean }) {
   if (loading) {
@@ -559,10 +293,6 @@ export default function StocksPage() {
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [indicLoading, setIndicLoading] = useState(false);
   const [finLoading, setFinLoading] = useState(false);
-  const [tradingPlan, setTradingPlan] = useState<TradingPlan | null>(null);
-  const [tradingPlanLoading, setTradingPlanLoading] = useState(false);
-  const [tradingPlanError, setTradingPlanError] = useState<string | null>(null);
-  const [showTradingPlan, setShowTradingPlan] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -624,27 +354,6 @@ export default function StocksPage() {
     } catch { /* ignore */ }
     finally { setFinLoading(false); }
   }, []);
-
-  const generateTradingPlan = useCallback(async (symbol: string) => {
-    setTradingPlanLoading(true);
-    setTradingPlanError(null);
-    try {
-      const q = quotes[symbol];
-      const name = q ? displayName(q) : symbol;
-      const res = await fetch(`/api/stocks/trading-plan?symbol=${encodeURIComponent(symbol)}&name=${encodeURIComponent(name)}`);
-      const data = await res.json();
-      if (data.error) {
-        setTradingPlanError(data.error);
-      } else {
-        setTradingPlan(data);
-        setShowTradingPlan(true);
-      }
-    } catch {
-      setTradingPlanError('網路錯誤，請重試');
-    } finally {
-      setTradingPlanLoading(false);
-    }
-  }, [quotes]);
 
   const fetchAnalyst = useCallback(async (symbol: string) => {
     setAnalystLoading(true); setAnalyst(null);
@@ -881,25 +590,11 @@ export default function StocksPage() {
               {/* TradingView chart + right panel */}
               <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-3">
                 <div className="bg-gray-900/70 border border-gray-700/50 rounded-xl p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="text-xs text-gray-500">
-                      K 線趨勢 &nbsp;·&nbsp;
-                      <span className="text-gray-300 font-semibold">{base(selected)}</span>
-                      {selectedQuote && <span className="ml-2 text-gray-400">{selectedQuote.currency} {fmtPrice(selectedQuote.regularMarketPrice)}</span>}
-                    </div>
-                    <button
-                      onClick={() => generateTradingPlan(selected)}
-                      disabled={tradingPlanLoading}
-                      className="ml-auto flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 disabled:opacity-50 rounded-lg text-xs text-white font-medium transition-all shadow-lg whitespace-nowrap"
-                    >
-                      {tradingPlanLoading
-                        ? <><span className="w-3 h-3 border border-white/50 border-t-white rounded-full animate-spin" /> 生成中…</>
-                        : '⚡ AI 交易計畫'}
-                    </button>
+                  <div className="text-xs text-gray-500 mb-2">
+                    K 線趨勢 &nbsp;·&nbsp;
+                    <span className="text-gray-300 font-semibold">{base(selected)}</span>
+                    {selectedQuote && <span className="ml-2 text-gray-400">{selectedQuote.currency} {fmtPrice(selectedQuote.regularMarketPrice)}</span>}
                   </div>
-                  {tradingPlanError && (
-                    <div className="mb-2 px-3 py-2 bg-red-900/30 border border-red-700/50 rounded-lg text-xs text-red-400">{tradingPlanError}</div>
-                  )}
                   <TradingViewChart key={selected} symbol={selected} />
                 </div>
 
@@ -976,15 +671,6 @@ export default function StocksPage() {
         </main>
       </div>
 
-      {/* Trading Plan Modal */}
-      {showTradingPlan && tradingPlan && (
-        <TradingPlanModal
-          plan={tradingPlan}
-          onClose={() => setShowTradingPlan(false)}
-          onRegenerate={() => selected && generateTradingPlan(selected)}
-          loading={tradingPlanLoading}
-        />
-      )}
     </div>
   );
 }
