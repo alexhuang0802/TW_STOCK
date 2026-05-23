@@ -167,6 +167,39 @@ function IndicatorCard({ label, value }: { label: string; value: string }) {
   );
 }
 
+// ── Prompt Modal ──────────────────────────────────────────────────────────
+function PromptModal({ text, onClose }: { text: string; onClose: () => void }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
+  return (
+    <div className="fixed inset-0 z-[200] bg-black/80 flex items-center justify-center p-4">
+      <div className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-2xl flex flex-col" style={{ maxHeight: '85vh' }}>
+        <div className="flex items-center justify-between p-4 border-b border-gray-800 flex-shrink-0">
+          <div>
+            <h3 className="text-sm font-bold text-white">ChatGPT 交易計畫 Prompt</h3>
+            <p className="text-xs text-gray-500 mt-0.5">複製後貼到 ChatGPT（建議使用 GPT-4）</p>
+          </div>
+          <button onClick={onClose} className="w-7 h-7 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-colors flex items-center justify-center text-lg leading-none">×</button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4">
+          <pre className="text-xs text-gray-300 whitespace-pre-wrap font-sans leading-relaxed">{text}</pre>
+        </div>
+        <div className="p-4 border-t border-gray-800 flex-shrink-0">
+          <button onClick={handleCopy}
+            className={`w-full py-3 rounded-lg text-sm font-bold transition-all ${copied ? 'bg-green-600 text-white' : 'bg-blue-600 hover:bg-blue-500 text-white'}`}>
+            {copied ? '✓ 已複製！去貼到 ChatGPT' : '📋 複製 Prompt'}
+          </button>
+          <p className="text-[10px] text-gray-600 text-center mt-2">複製後打開 ChatGPT → 貼上 → 送出，即可獲得完整交易計畫</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Analyst Panel ─────────────────────────────────────────────────────────
 function AnalystPanel({ data, loading }: { data: Analyst | null; loading: boolean }) {
   if (loading) {
@@ -293,6 +326,7 @@ export default function StocksPage() {
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [indicLoading, setIndicLoading] = useState(false);
   const [finLoading, setFinLoading] = useState(false);
+  const [showPromptModal, setShowPromptModal] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -354,6 +388,54 @@ export default function StocksPage() {
     } catch { /* ignore */ }
     finally { setFinLoading(false); }
   }, []);
+
+  const buildPrompt = useCallback(() => {
+    if (!selected) return '';
+    const q = quotes[selected];
+    if (!q) return '';
+    const ind = indicators;
+    const name = displayName(q);
+    const sym = base(selected);
+    const pos = q.regularMarketChangePercent >= 0;
+    const f = (n: number) => n >= 100 ? n.toFixed(2) : n.toFixed(3);
+    return `你是一位專業的股票技術分析師，請根據以下數據，制定一份完整的交易計畫。
+
+## 股票資訊
+- 代碼：${sym}
+- 名稱：${name}
+- 目前股價：${f(q.regularMarketPrice)}
+- 今日漲跌：${pos ? '+' : ''}${q.regularMarketChange.toFixed(2)}（${pos ? '+' : ''}${q.regularMarketChangePercent.toFixed(2)}%）
+- 今日最高：${f(q.regularMarketDayHigh)} / 今日最低：${f(q.regularMarketDayLow)}${q.fiftyTwoWeekHigh ? `\n- 52週最高：${f(q.fiftyTwoWeekHigh)} / 52週最低：${f(q.fiftyTwoWeekLow ?? 0)}` : ''}
+
+## 技術指標
+${ind ? `- MA5：${ind.sma5}
+- MA20：${ind.sma20}
+- RSI14：${ind.rsi14}（>70超買，<30超賣，50以上偏多）
+- MACD：${ind.macd}（訊號線：${ind.macdSignal}，柱狀圖：${ind.macdHist}）
+- KD：K=${ind.kdK}，D=${ind.kdD}（>80超買，<20超賣）
+- 量比（今量/20日均量）：${ind.volRatio}（>1為放量）
+- 距MA20：${ind.distSma20}
+- 年化波動率：${ind.volatility}
+- 近期高低區間：${ind.intraRange}` : '（指標載入中，請稍後再試）'}
+
+---
+請依以下格式提供交易計畫：
+
+1. **趨勢判斷**（3-4個要點，說明均線排列、量價、指標）
+2. **關鍵價位**（請標明具體數字）
+   - 突破上關價：
+   - 壓力1 / 壓力2：
+   - 支撐1 / 支撐2：
+   - 強力支撐：
+3. **交易策略**
+   - 多頭策略：條件、進場區間、目標1/目標2、停損
+   - 空頭策略：條件、進場區間、目標1/目標2、停損
+4. **風險管理**（3-4條）
+5. **進場計畫表格**（欄位：情境 / 進場條件 / 進場區間 / 停損 / 目標1 / 目標2 / 盈虧比）
+6. **執行紀律**（4條）
+7. **觀察重點**（3條）
+8. **備註**（個股特性、風險提示）`;
+  }, [selected, quotes, indicators]);
 
   const fetchAnalyst = useCallback(async (symbol: string) => {
     setAnalystLoading(true); setAnalyst(null);
@@ -590,10 +672,20 @@ export default function StocksPage() {
               {/* TradingView chart + right panel */}
               <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-3">
                 <div className="bg-gray-900/70 border border-gray-700/50 rounded-xl p-4">
-                  <div className="text-xs text-gray-500 mb-2">
-                    K 線趨勢 &nbsp;·&nbsp;
-                    <span className="text-gray-300 font-semibold">{base(selected)}</span>
-                    {selectedQuote && <span className="ml-2 text-gray-400">{selectedQuote.currency} {fmtPrice(selectedQuote.regularMarketPrice)}</span>}
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="text-xs text-gray-500">
+                      K 線趨勢 &nbsp;·&nbsp;
+                      <span className="text-gray-300 font-semibold">{base(selected)}</span>
+                      {selectedQuote && <span className="ml-2 text-gray-400">{selectedQuote.currency} {fmtPrice(selectedQuote.regularMarketPrice)}</span>}
+                    </div>
+                    <button
+                      onClick={() => setShowPromptModal(true)}
+                      disabled={!indicators}
+                      title={indicators ? '產生 ChatGPT 交易計畫 Prompt' : '等待技術指標載入…'}
+                      className="ml-auto flex items-center gap-1.5 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 disabled:opacity-40 rounded-lg text-xs text-gray-200 hover:text-white transition-colors whitespace-nowrap"
+                    >
+                      📋 ChatGPT 分析
+                    </button>
                   </div>
                   <TradingViewChart key={selected} symbol={selected} />
                 </div>
@@ -671,6 +763,9 @@ export default function StocksPage() {
         </main>
       </div>
 
+      {showPromptModal && (
+        <PromptModal text={buildPrompt()} onClose={() => setShowPromptModal(false)} />
+      )}
     </div>
   );
 }
