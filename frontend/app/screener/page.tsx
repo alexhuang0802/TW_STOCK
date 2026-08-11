@@ -13,6 +13,7 @@ interface ScanRow {
   '嚴選多頭(B)': string;
   '漲幅(%)': number;
   '量縮(%)': number | null;
+  '成交量(張)'?: number;
 }
 
 interface ScanData {
@@ -24,6 +25,9 @@ const VOL_SHRINK_MIN = 40;
 const VOL_SHRINK_MAX = 60;
 const isVolShrink = (pct: number | null | undefined) =>
   pct != null && pct >= VOL_SHRINK_MIN && pct <= VOL_SHRINK_MAX;
+
+const fmtVolume = (zhang: number) =>
+  zhang >= 10000 ? `${(zhang / 10000).toFixed(1)}萬張` : `${zhang.toLocaleString()}張`;
 
 const ALL = '全部';
 const DEFAULT_GAIN_MAX = '5';
@@ -215,6 +219,7 @@ export default function ScreenerPage() {
                       <th className="text-left font-medium px-4 py-2.5 hidden md:table-cell">族群</th>
                       <th className="text-right font-medium px-4 py-2.5">價格</th>
                       <th className="text-right font-medium px-4 py-2.5">漲幅</th>
+                      <th className="text-right font-medium px-4 py-2.5 hidden sm:table-cell">成交量</th>
                       <th className="text-right font-medium px-4 py-2.5">量縮</th>
                       <th className="text-left font-medium px-4 py-2.5">扣低狀態</th>
                       <th className="text-left font-medium px-4 py-2.5">嚴選</th>
@@ -223,7 +228,7 @@ export default function ScreenerPage() {
                   <tbody>
                     {filteredRows.length === 0 && (
                       <tr>
-                        <td colSpan={9} className="px-4 py-10 text-center text-gray-400">
+                        <td colSpan={10} className="px-4 py-10 text-center text-gray-400">
                           沒有符合篩選條件的股票
                         </td>
                       </tr>
@@ -242,6 +247,9 @@ export default function ScreenerPage() {
                           <td className="px-4 py-2.5 text-right font-medium tabular-nums">{row.價格}</td>
                           <td className={`px-4 py-2.5 text-right font-semibold tabular-nums ${up ? 'text-green-600' : down ? 'text-red-500' : 'text-gray-400'}`}>
                             {change > 0 ? '+' : ''}{change.toFixed(2)}%
+                          </td>
+                          <td className="px-4 py-2.5 text-right text-gray-500 tabular-nums hidden sm:table-cell">
+                            {row['成交量(張)'] != null ? fmtVolume(row['成交量(張)']) : '—'}
                           </td>
                           <td className="px-4 py-2.5 text-right tabular-nums">
                             {volPct != null ? (

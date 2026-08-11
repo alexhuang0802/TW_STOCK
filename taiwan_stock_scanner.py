@@ -266,6 +266,7 @@ def scan(cache: dict, ticker_map: dict) -> list[dict]:
             "嚴選多頭(B)"  : b_label or "",
             "漲幅(%)"      : round(change_pct, 2),
             "量縮(%)"      : vol_ratio_pct,
+            "成交量(張)"   : latest_vol_zhang,
         })
 
     return results
