@@ -234,6 +234,10 @@ export default function HomePage() {
           </div>
           <div className="flex items-center gap-3">
             {lastUpdate && <span className="text-xs text-gray-400 hidden sm:block">更新 {lastUpdate}</span>}
+            <Link href="/screener"
+              className="px-4 py-1.5 bg-amber-500 hover:bg-amber-400 rounded-lg text-sm font-medium transition-colors text-white">
+              📊 篩選結果
+            </Link>
             <Link href="/stocks"
               className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition-colors text-white">
               看板 →

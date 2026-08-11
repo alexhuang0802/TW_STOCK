@@ -1,15 +1,18 @@
 """
 台股篩選程式 — Yahoo Finance 版
 =================================
-Group A  收盤 > MA5/10/20/60/120/240 + 月線扣低/即將扣低 + 距前高 ≤20% + 非創新高
-Group B  嚴格多頭排列 (price>MA5>…>MA240) + 股價貼近季線 ≤5%
-共同條件 電子股 + 成交金額 > 5000萬
+主篩選（必要條件）
+  收盤 > MA5/10/20/60/120/240 + 月線扣低/即將扣低 + 距前高 ≤20% + 非創新高
+附加標記（不影響入選，只加註）
+  嚴格多頭排列 (price>MA5>…>MA240) + 股價貼近季線 ≤5%
+共同條件
+  電子股 + 成交金額 > 5000萬
 
 資料來源: Yahoo Finance (yfinance)
-需安裝:   pip install yfinance pandas requests openpyxl
+輸出: frontend/public/scan-results.json（給網站顯示用）
 """
 
-import os, sys, time, warnings
+import os, sys, time, json, warnings
 import pandas as pd
 import yfinance as yf
 import requests
@@ -19,7 +22,8 @@ from pathlib import Path
 
 warnings.filterwarnings("ignore")
 
-BASE_DIR = Path(__file__).parent
+BASE_DIR    = Path(__file__).parent
+RESULT_PATH = BASE_DIR / "frontend" / "public" / "scan-results.json"
 
 # ── 可調整參數 ─────────────────────────────────
 MIN_TRADE_VALUE  = 50_000_000   # 成交金額下限 (元)
@@ -28,9 +32,10 @@ KOU_DI_DAYS      = 5            # 即將扣低：往後看幾個交易日
 MA_PERIODS       = [5, 10, 20, 60, 120, 240]
 NEAR_MA60_PCT    = 5.0          # 貼季線：距 MA60 上方幅度上限 (%)
 MAX_WORKERS      = 10           # 平行下載執行緒數
-SAVE_EXCEL       = True
 
-TG_TOKEN   = os.environ.get("TG_BOT_TOKEN", "8041061344:AAEaPljQwnvWI8QJnkt_q3VBz1RmU14KDB8")
+ENABLE_GROUP_B   = True         # 是否額外標記 Group B（嚴格多頭排列＋貼近季線），僅加註不影響入選
+
+TG_TOKEN   = os.environ.get("TG_BOT_TOKEN", "")
 TG_CHAT_ID = os.environ.get("TG_CHAT_ID",  "")
 
 ELECTRONIC_INDUSTRIES = {
@@ -71,8 +76,8 @@ def get_stock_list() -> list[dict]:
                     in_section = False; continue
                 if not in_section:
                     continue
-                if "\u3000" in cell:
-                    parts = cell.split("\u3000")
+                if "　" in cell:
+                    parts = cell.split("　")
                     code  = parts[0].strip()
                     name  = parts[1].strip() if len(parts) > 1 else ""
                     ind   = str(row.iloc[4]).strip() if len(row) > 4 else ""
@@ -104,7 +109,6 @@ def _flatten_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-
 def _download_one(ticker: str, start: str, end: str):
     try:
         t  = yf.Ticker(ticker)
@@ -123,7 +127,7 @@ def _download_one(ticker: str, start: str, end: str):
 
 
 def download_all(stock_list: list[dict]) -> tuple[dict, dict]:
-    end   = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
+    end   = (datetime.now() + timedelta(days=2)).strftime("%Y-%m-%d")
     start = (datetime.now() - timedelta(days=HISTORY_DAYS)).strftime("%Y-%m-%d")
 
     suffix_map = {"TWSE": ".TW", "TPEX": ".TWO"}
@@ -155,12 +159,63 @@ def download_all(stock_list: list[dict]) -> tuple[dict, dict]:
 #  3. 篩選
 # ═══════════════════════════════════════════════
 
+def _check_group_a(close: pd.Series, mas: dict, latest_close: float):
+    """主篩選：收盤 > 所有均線 + 月線扣低/即將扣低 + 距前高 ≤20% + 非創新高"""
+    if not all(latest_close > mas[p] for p in MA_PERIODS):
+        return None
+
+    # 近 60 日高點
+    close_60     = close.iloc[-60:]
+    high_60      = float(close_60.max())
+    high_60_idx  = close_60.idxmax()
+    latest_idx   = close_60.index[-1]
+
+    if high_60_idx == latest_idx:   # 創新高，跳過
+        return None
+
+    dist_pct = (high_60 - latest_close) / high_60 * 100
+    if dist_pct > 20:
+        return None
+
+    # close[-20] = 明天的扣抵點
+    # 若 close[-20] <= 今日收盤 → 明天就扣低了 = 已在扣 → 不要
+    # 若 close[-20] > 今日收盤 → 明天是扣高，再往後才是扣低 = 準備扣下去 → 要
+    if close.iloc[-20] <= latest_close:
+        return None
+
+    # 從後天起找扣低點：close[-19]=2日後, close[-18]=3日後...
+    for i in range(1, KOU_DI_DAYS + 1):
+        idx = -20 + i   # i=1→-19(2日後), i=2→-18(3日後)...
+        if close.iloc[idx] < latest_close:
+            return f"即將扣低({i + 1}日後)"
+
+    return None
+
+
+def _check_group_b(mas: dict, latest_close: float):
+    """附加標記：嚴格多頭排列 (price>MA5>MA10>...>MA240) + 股價貼近季線 ≤NEAR_MA60_PCT%"""
+    chain = [latest_close] + [mas[p] for p in MA_PERIODS]
+    if not all(chain[i] > chain[i + 1] for i in range(len(chain) - 1)):
+        return None
+
+    near_pct = (latest_close - mas[60]) / mas[60] * 100
+    if near_pct > NEAR_MA60_PCT:
+        return None
+
+    return f"貼季線({near_pct:.1f}%)"
+
+
 def scan(cache: dict, ticker_map: dict) -> list[dict]:
     results = []
 
     for ticker, info in ticker_map.items():
         df = cache.get(ticker)
         if df is None or df.empty:
+            continue
+
+        # 產業過濾
+        industry = info.get("industry", "")
+        if industry not in ELECTRONIC_INDUSTRIES:
             continue
 
         # 取出收盤價與成交量
@@ -188,70 +243,34 @@ def scan(cache: dict, ticker_map: dict) -> list[dict]:
         if trade_value < MIN_TRADE_VALUE:
             continue
 
-        # 收盤 > 所有均線
-        if not all(latest_close > mas[p] for p in MA_PERIODS):
-            continue
-
-        # 近 60 日高點
-        close_60     = close.iloc[-60:]
-        high_60      = float(close_60.max())
-        high_60_idx  = close_60.idxmax()
-        latest_idx   = close_60.index[-1]
-
-        if high_60_idx == latest_idx:   # 創新高，跳過
-            continue
-
-        dist_pct = (high_60 - latest_close) / high_60 * 100
-
-        # MA20 趨勢
-        ma20_series  = close.rolling(20).mean()
-        ma20_today   = float(ma20_series.iloc[-1])
-        ma20_yest    = float(ma20_series.iloc[-2]) if len(ma20_series) >= 2 else ma20_today
-        ma20_trend   = "上升/持平" if ma20_today >= ma20_yest else "下降"
-
-        if dist_pct > 50:
-            continue
-
-        # close[-20] = 明天的扣抵點
-        # 若 close[-20] <= 今日收盤 → 明天就扣低了 = 已在扣 → 不要
-        # 若 close[-20] > 今日收盤 → 明天是扣高，再往後才是扣低 = 準備扣下去 → 要
-        if close.iloc[-20] <= latest_close:
-            continue
-
-        # 從後天起找扣低點：close[-19]=2日後, close[-18]=3日後...
-        kou_di_label = ""
-        for i in range(1, KOU_DI_DAYS + 1):
-            idx = -20 + i   # i=1→-19(2日後), i=2→-18(3日後)...
-            if close.iloc[idx] < latest_close:
-                kou_di_label = f"即將扣低({i + 1}日後)"
-                break
-
+        # 主篩選：必須符合才會入選
+        kou_di_label = _check_group_a(close, mas, latest_close)
         if not kou_di_label:
             continue
 
-        # 產業過濾
-        industry = info.get("industry", "")
-        if industry not in ELECTRONIC_INDUSTRIES:
-            continue
+        # 附加標記：在同一份資料上加註，不影響是否入選
+        b_label = _check_group_b(mas, latest_close) if ENABLE_GROUP_B else None
 
-        code    = info.get("code", ticker.replace(".TWO", "").replace(".TW", ""))
-        market  = "上市" if info.get("market") == "TWSE" else "上櫃"
+        code       = info.get("code", ticker.replace(".TWO", "").replace(".TW", ""))
+        market     = "上市" if info.get("market") == "TWSE" else "上櫃"
         change_pct = (latest_close - prev_close) / prev_close * 100
 
         results.append({
-            "股票代號"   : code,
-            "名稱"       : info.get("name", ""),
-            "族群"       : industry,
-            "價格"       : round(latest_close, 2),
-            "扣低狀態"   : kou_di_label,
-            "漲幅(%)"    : round(change_pct, 2),
+            "股票代號"     : code,
+            "名稱"         : info.get("name", ""),
+            "市場"         : market,
+            "族群"         : industry,
+            "價格"         : round(latest_close, 2),
+            "扣低狀態"     : kou_di_label,
+            "嚴選多頭(B)"  : b_label or "",
+            "漲幅(%)"      : round(change_pct, 2),
         })
 
     return results
 
 
 # ═══════════════════════════════════════════════
-#  4. Telegram
+#  4. Telegram（選用）
 # ═══════════════════════════════════════════════
 
 def send_telegram(text: str) -> None:
@@ -273,12 +292,14 @@ def send_telegram(text: str) -> None:
 
 def format_telegram_message(df: pd.DataFrame, date_str: str) -> str:
     lines = [f"📊 <b>台股篩選結果 {date_str}</b>",
-             f"符合條件：<b>{len(df)} 支</b>（均線多頭＋即將扣低＋電子股）\n"]
+             f"符合條件：<b>{len(df)} 支</b>"
+             f"（均線多頭＋即將扣低＋電子股，🌟=另符合嚴格多頭排列＋貼季線）\n"]
     for _, row in df.iterrows():
         change = row["漲幅(%)"]
         arrow  = "▲" if change > 0 else ("▼" if change < 0 else "─")
+        star   = f" 🌟{row['嚴選多頭(B)']}" if row["嚴選多頭(B)"] else ""
         lines.append(
-            f"<b>{row['名稱']}</b>（{row['股票代號']}）{row['族群']}\n"
+            f"<b>{row['名稱']}</b>（{row['股票代號']}）{row['族群']}{star}\n"
             f"  {arrow} {row['價格']} ({change:+.2f}%)  {row['扣低狀態']}"
         )
     return "\n".join(lines)
@@ -307,27 +328,36 @@ def main():
     results = scan(cache, ticker_map)
 
     print("\n" + "=" * 55)
-    if not results:
-        print("  沒有找到符合條件的股票。"); return
 
-    EXCEL_COLS = ["股票代號", "名稱", "族群", "價格", "扣低狀態"]
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+    RESULT_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    if not results:
+        print("  沒有找到符合條件的股票。")
+        RESULT_PATH.write_text(
+            json.dumps({"updated_at": now_str, "results": []}, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        return
 
     df_out = (
         pd.DataFrame(results)
         .sort_values("扣低狀態", ascending=True)
         .reset_index(drop=True)
     )
-    df_out.index += 1
 
-    print(f"  共 {len(results)} 支（即將扣低）\n")
-    print(df_out[EXCEL_COLS].to_string())
+    b_count = int((df_out["嚴選多頭(B)"] != "").sum())
+    print(f"  共 {len(results)} 支（即將扣低），其中 {b_count} 支另符合嚴格多頭排列＋貼季線\n")
+    print(df_out.to_string())
 
-    if SAVE_EXCEL:
-        ts        = datetime.now().strftime("%Y%m%d_%H%M")
-        xlsx_path = BASE_DIR / f"台股篩選_{ts}.xlsx"
-        with pd.ExcelWriter(xlsx_path, engine="openpyxl") as writer:
-            df_out[EXCEL_COLS].to_excel(writer, index=True, sheet_name="即將扣低")
-        print(f"\n  已儲存 Excel：{xlsx_path}")
+    RESULT_PATH.write_text(
+        json.dumps(
+            {"updated_at": now_str, "results": df_out.to_dict(orient="records")},
+            ensure_ascii=False, indent=2,
+        ),
+        encoding="utf-8",
+    )
+    print(f"\n  已寫入 {RESULT_PATH}")
 
     print("\n  發送 Telegram...")
     send_telegram(format_telegram_message(df_out, datetime.now().strftime("%Y-%m-%d")))
