@@ -31,10 +31,7 @@ jobs:
           restore-keys: |
             stock-cache-${{ runner.os }}-
 
-      - name: 執行篩選並發送 Telegram
-        env:
-          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
-          TG_CHAT_ID:   ${{ secrets.TG_CHAT_ID }}
+      - name: 執行篩選
         run: python taiwan_stock_scanner.py 2>&1 | tee scan_output.txt
 
       - name: 上傳篩選結果

@@ -12,7 +12,7 @@
 輸出: frontend/public/scan-results.json（給網站顯示用）
 """
 
-import os, sys, time, json, warnings
+import sys, time, json, warnings
 import pandas as pd
 import yfinance as yf
 import requests
@@ -34,9 +34,6 @@ NEAR_MA60_PCT    = 5.0          # 貼季線：距 MA60 上方幅度上限 (%)
 MAX_WORKERS      = 10           # 平行下載執行緒數
 
 ENABLE_GROUP_B   = True         # 是否額外標記 Group B（嚴格多頭排列＋貼近季線），僅加註不影響入選
-
-TG_TOKEN   = os.environ.get("TG_BOT_TOKEN", "")
-TG_CHAT_ID = os.environ.get("TG_CHAT_ID",  "")
 
 ELECTRONIC_INDUSTRIES = {
     "半導體業", "電腦及週邊設備業", "光電業", "通信網路業",
@@ -270,43 +267,7 @@ def scan(cache: dict, ticker_map: dict) -> list[dict]:
 
 
 # ═══════════════════════════════════════════════
-#  4. Telegram（選用）
-# ═══════════════════════════════════════════════
-
-def send_telegram(text: str) -> None:
-    if not TG_TOKEN or not TG_CHAT_ID:
-        print("  [TG] 未設定 Token 或 Chat ID，跳過。")
-        return
-    url    = f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage"
-    chunks = [text[i:i+4000] for i in range(0, len(text), 4000)]
-    for chunk in chunks:
-        try:
-            resp = requests.post(url, json={
-                "chat_id": TG_CHAT_ID, "text": chunk, "parse_mode": "HTML",
-            }, timeout=15)
-            if not resp.ok:
-                print(f"  [TG] 發送失敗: {resp.text}")
-        except Exception as e:
-            print(f"  [TG] 錯誤: {e}")
-
-
-def format_telegram_message(df: pd.DataFrame, date_str: str) -> str:
-    lines = [f"📊 <b>台股篩選結果 {date_str}</b>",
-             f"符合條件：<b>{len(df)} 支</b>"
-             f"（均線多頭＋即將扣低＋電子股，🌟=另符合嚴格多頭排列＋貼季線）\n"]
-    for _, row in df.iterrows():
-        change = row["漲幅(%)"]
-        arrow  = "▲" if change > 0 else ("▼" if change < 0 else "─")
-        star   = f" 🌟{row['嚴選多頭(B)']}" if row["嚴選多頭(B)"] else ""
-        lines.append(
-            f"<b>{row['名稱']}</b>（{row['股票代號']}）{row['族群']}{star}\n"
-            f"  {arrow} {row['價格']} ({change:+.2f}%)  {row['扣低狀態']}"
-        )
-    return "\n".join(lines)
-
-
-# ═══════════════════════════════════════════════
-#  5. 主程式
+#  4. 主程式
 # ═══════════════════════════════════════════════
 
 def main():
@@ -358,10 +319,6 @@ def main():
         encoding="utf-8",
     )
     print(f"\n  已寫入 {RESULT_PATH}")
-
-    print("\n  發送 Telegram...")
-    send_telegram(format_telegram_message(df_out, datetime.now().strftime("%Y-%m-%d")))
-
     print(f"\n  總耗時：{time.time()-t0:.1f} 秒")
 
 
