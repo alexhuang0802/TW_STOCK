@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface ScanRow {
   股票代號: string;
@@ -25,10 +25,20 @@ const VOL_SHRINK_MAX = 60;
 const isVolShrink = (pct: number | null | undefined) =>
   pct != null && pct >= VOL_SHRINK_MIN && pct <= VOL_SHRINK_MAX;
 
+const ALL = '全部';
+
 export default function ScreenerPage() {
   const [data, setData] = useState<ScanData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
+  const [priceMin, setPriceMin] = useState('');
+  const [priceMax, setPriceMax] = useState('');
+  const [volMin, setVolMin] = useState('');
+  const [volMax, setVolMax] = useState('');
+  const [market, setMarket] = useState(ALL);
+  const [industry, setIndustry] = useState(ALL);
+  const [status, setStatus] = useState(ALL);
 
   useEffect(() => {
     fetch('/scan-results.json', { cache: 'no-store' })
@@ -44,6 +54,32 @@ export default function ScreenerPage() {
   const rows = data?.results ?? [];
   const bCount = rows.filter(r => r['嚴選多頭(B)']).length;
   const volShrinkCount = rows.filter(r => isVolShrink(r['量縮(%)'])).length;
+
+  const markets   = useMemo(() => Array.from(new Set(rows.map(r => r.市場))).sort(), [rows]);
+  const industries = useMemo(() => Array.from(new Set(rows.map(r => r.族群))).sort(), [rows]);
+  const statuses  = useMemo(() => Array.from(new Set(rows.map(r => r.扣低狀態))).sort(), [rows]);
+
+  const filteredRows = useMemo(() => {
+    const pMin = parseFloat(priceMin), pMax = parseFloat(priceMax);
+    const vMin = parseFloat(volMin), vMax = parseFloat(volMax);
+    return rows.filter(r => {
+      if (!Number.isNaN(pMin) && r.價格 < pMin) return false;
+      if (!Number.isNaN(pMax) && r.價格 > pMax) return false;
+      if (!Number.isNaN(vMin) && (r['量縮(%)'] == null || r['量縮(%)'] < vMin)) return false;
+      if (!Number.isNaN(vMax) && (r['量縮(%)'] == null || r['量縮(%)'] > vMax)) return false;
+      if (market !== ALL && r.市場 !== market) return false;
+      if (industry !== ALL && r.族群 !== industry) return false;
+      if (status !== ALL && r.扣低狀態 !== status) return false;
+      return true;
+    });
+  }, [rows, priceMin, priceMax, volMin, volMax, market, industry, status]);
+
+  const resetFilters = () => {
+    setPriceMin(''); setPriceMax(''); setVolMin(''); setVolMax('');
+    setMarket(ALL); setIndustry(ALL); setStatus(ALL);
+  };
+
+  const filtersActive = priceMin || priceMax || volMin || volMax || market !== ALL || industry !== ALL || status !== ALL;
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
@@ -87,9 +123,67 @@ export default function ScreenerPage() {
           </div>
         ) : (
           <>
+            <div className="bg-white border border-gray-100 rounded-xl shadow-sm p-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                <div className="col-span-2 sm:col-span-1">
+                  <label className="block text-[11px] text-gray-400 mb-1">股價</label>
+                  <div className="flex items-center gap-1">
+                    <input type="number" value={priceMin} onChange={e => setPriceMin(e.target.value)}
+                      placeholder="最低" className="w-full min-w-0 px-2 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400" />
+                    <span className="text-gray-300">–</span>
+                    <input type="number" value={priceMax} onChange={e => setPriceMax(e.target.value)}
+                      placeholder="最高" className="w-full min-w-0 px-2 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400" />
+                  </div>
+                </div>
+                <div className="col-span-2 sm:col-span-1">
+                  <label className="block text-[11px] text-gray-400 mb-1">量縮 %</label>
+                  <div className="flex items-center gap-1">
+                    <input type="number" value={volMin} onChange={e => setVolMin(e.target.value)}
+                      placeholder="最低" className="w-full min-w-0 px-2 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400" />
+                    <span className="text-gray-300">–</span>
+                    <input type="number" value={volMax} onChange={e => setVolMax(e.target.value)}
+                      placeholder="最高" className="w-full min-w-0 px-2 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[11px] text-gray-400 mb-1">市場</label>
+                  <select value={market} onChange={e => setMarket(e.target.value)}
+                    className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-blue-400">
+                    <option value={ALL}>{ALL}</option>
+                    {markets.map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[11px] text-gray-400 mb-1">族群</label>
+                  <select value={industry} onChange={e => setIndustry(e.target.value)}
+                    className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-blue-400">
+                    <option value={ALL}>{ALL}</option>
+                    {industries.map(x => <option key={x} value={x}>{x}</option>)}
+                  </select>
+                </div>
+                <div className="col-span-2 sm:col-span-2 lg:col-span-1">
+                  <label className="block text-[11px] text-gray-400 mb-1">扣低狀態</label>
+                  <select value={status} onChange={e => setStatus(e.target.value)}
+                    className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-blue-400">
+                    <option value={ALL}>{ALL}</option>
+                    {statuses.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div className="flex items-end">
+                  <button onClick={resetFilters} disabled={!filtersActive}
+                    className="w-full px-3 py-1.5 text-sm rounded-md border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-transparent transition-colors">
+                    重設篩選
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <div className="text-xs text-gray-500">
               共 <b className="text-gray-700">{rows.length}</b> 支，其中 <b className="text-amber-600">{bCount}</b> 支另符合嚴選多頭、
               <b className="text-sky-600">{volShrinkCount}</b> 支量縮
+              {filtersActive && (
+                <>　·　篩選後剩 <b className="text-blue-600">{filteredRows.length}</b> 支</>
+              )}
             </div>
             <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
@@ -108,7 +202,14 @@ export default function ScreenerPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.map((row, i) => {
+                    {filteredRows.length === 0 && (
+                      <tr>
+                        <td colSpan={9} className="px-4 py-10 text-center text-gray-400">
+                          沒有符合篩選條件的股票
+                        </td>
+                      </tr>
+                    )}
+                    {filteredRows.map((row, i) => {
                       const change = row['漲幅(%)'];
                       const up = change > 0, down = change < 0;
                       const volPct = row['量縮(%)'];
