@@ -248,6 +248,10 @@ def scan(cache: dict, ticker_map: dict) -> list[dict]:
         # 附加標記：在同一份資料上加註，不影響是否入選
         b_label = _check_group_b(mas, latest_close) if ENABLE_GROUP_B else None
 
+        # 量縮：今日成交量 / 昨日成交量，僅加註不影響入選
+        prev_volume   = float(volume.iloc[-2]) if len(volume) >= 2 else float(volume.iloc[-1])
+        vol_ratio_pct = round(float(volume.iloc[-1]) / prev_volume * 100, 1) if prev_volume > 0 else None
+
         code       = info.get("code", ticker.replace(".TWO", "").replace(".TW", ""))
         market     = "上市" if info.get("market") == "TWSE" else "上櫃"
         change_pct = (latest_close - prev_close) / prev_close * 100
@@ -261,6 +265,7 @@ def scan(cache: dict, ticker_map: dict) -> list[dict]:
             "扣低狀態"     : kou_di_label,
             "嚴選多頭(B)"  : b_label or "",
             "漲幅(%)"      : round(change_pct, 2),
+            "量縮(%)"      : vol_ratio_pct,
         })
 
     return results

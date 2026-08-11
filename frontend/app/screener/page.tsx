@@ -12,12 +12,18 @@ interface ScanRow {
   扣低狀態: string;
   '嚴選多頭(B)': string;
   '漲幅(%)': number;
+  '量縮(%)': number | null;
 }
 
 interface ScanData {
   updated_at: string;
   results: ScanRow[];
 }
+
+const VOL_SHRINK_MIN = 40;
+const VOL_SHRINK_MAX = 60;
+const isVolShrink = (pct: number | null | undefined) =>
+  pct != null && pct >= VOL_SHRINK_MIN && pct <= VOL_SHRINK_MAX;
 
 export default function ScreenerPage() {
   const [data, setData] = useState<ScanData | null>(null);
@@ -37,6 +43,7 @@ export default function ScreenerPage() {
 
   const rows = data?.results ?? [];
   const bCount = rows.filter(r => r['嚴選多頭(B)']).length;
+  const volShrinkCount = rows.filter(r => isVolShrink(r['量縮(%)'])).length;
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
@@ -64,6 +71,8 @@ export default function ScreenerPage() {
           均線多頭排列＋即將扣低＋電子股・成交金額&gt;5000萬。
           <span className="ml-1 px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-semibold">🌟</span>
           {' '}標記另符合嚴格多頭排列＋貼近季線。
+          <span className="ml-1 px-1.5 py-0.5 rounded-full bg-sky-100 text-sky-700 font-semibold">💧</span>
+          {' '}標記今日量約為昨日 {VOL_SHRINK_MIN}-{VOL_SHRINK_MAX}%（量縮）。
         </p>
 
         {loading ? (
@@ -79,7 +88,8 @@ export default function ScreenerPage() {
         ) : (
           <>
             <div className="text-xs text-gray-500">
-              共 <b className="text-gray-700">{rows.length}</b> 支，其中 <b className="text-amber-600">{bCount}</b> 支另符合嚴選多頭
+              共 <b className="text-gray-700">{rows.length}</b> 支，其中 <b className="text-amber-600">{bCount}</b> 支另符合嚴選多頭、
+              <b className="text-sky-600">{volShrinkCount}</b> 支量縮
             </div>
             <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
@@ -92,6 +102,7 @@ export default function ScreenerPage() {
                       <th className="text-left font-medium px-4 py-2.5 hidden md:table-cell">族群</th>
                       <th className="text-right font-medium px-4 py-2.5">價格</th>
                       <th className="text-right font-medium px-4 py-2.5">漲幅</th>
+                      <th className="text-right font-medium px-4 py-2.5">量縮</th>
                       <th className="text-left font-medium px-4 py-2.5">扣低狀態</th>
                       <th className="text-left font-medium px-4 py-2.5">嚴選</th>
                     </tr>
@@ -100,6 +111,8 @@ export default function ScreenerPage() {
                     {rows.map((row, i) => {
                       const change = row['漲幅(%)'];
                       const up = change > 0, down = change < 0;
+                      const volPct = row['量縮(%)'];
+                      const volShrink = isVolShrink(volPct);
                       return (
                         <tr key={row.股票代號 + i} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/60">
                           <td className="px-4 py-2.5 font-semibold text-gray-700">{row.股票代號}</td>
@@ -109,6 +122,13 @@ export default function ScreenerPage() {
                           <td className="px-4 py-2.5 text-right font-medium tabular-nums">{row.價格}</td>
                           <td className={`px-4 py-2.5 text-right font-semibold tabular-nums ${up ? 'text-green-600' : down ? 'text-red-500' : 'text-gray-400'}`}>
                             {change > 0 ? '+' : ''}{change.toFixed(2)}%
+                          </td>
+                          <td className="px-4 py-2.5 text-right tabular-nums">
+                            {volPct != null ? (
+                              <span className={volShrink ? 'px-1.5 py-0.5 rounded-full bg-sky-100 text-sky-700 font-semibold whitespace-nowrap' : 'text-gray-500'}>
+                                {volShrink && '💧 '}{volPct.toFixed(0)}%
+                              </span>
+                            ) : '—'}
                           </td>
                           <td className="px-4 py-2.5 text-gray-600">{row.扣低狀態}</td>
                           <td className="px-4 py-2.5">
