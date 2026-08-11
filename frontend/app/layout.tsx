@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "省錢小工具 - 雙北超市超商優惠整合",
-  description: "一站查看全聯、家樂福、美廉社、7-ELEVEN、全家、萊爾富、OK超商的最新優惠活動",
+  title: "股市分析 - 台股大盤與篩選看板",
+  description: "大盤指數、三大法人資金流向、個股看板與每日台股篩選結果",
 };
 
 export default function RootLayout({
