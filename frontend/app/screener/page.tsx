@@ -113,7 +113,10 @@ export default function ScreenerPage() {
         <div className="flex items-center justify-between flex-wrap gap-2">
           <h1 className="text-lg font-bold">📊 台股篩選結果</h1>
           {data && (
-            <span className="text-xs text-gray-400">最後更新：{data.updated_at}</span>
+            <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              最後更新：{data.updated_at}
+            </span>
           )}
         </div>
         <p className="text-xs text-gray-400">
