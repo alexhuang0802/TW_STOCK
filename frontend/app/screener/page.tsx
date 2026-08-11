@@ -26,6 +26,7 @@ const isVolShrink = (pct: number | null | undefined) =>
   pct != null && pct >= VOL_SHRINK_MIN && pct <= VOL_SHRINK_MAX;
 
 const ALL = '全部';
+const DEFAULT_GAIN_MAX = '5';
 
 export default function ScreenerPage() {
   const [data, setData] = useState<ScanData | null>(null);
@@ -36,6 +37,8 @@ export default function ScreenerPage() {
   const [priceMax, setPriceMax] = useState('');
   const [volMin, setVolMin] = useState('');
   const [volMax, setVolMax] = useState('');
+  const [gainMin, setGainMin] = useState('');
+  const [gainMax, setGainMax] = useState(DEFAULT_GAIN_MAX);
   const [market, setMarket] = useState(ALL);
   const [industry, setIndustry] = useState(ALL);
   const [status, setStatus] = useState(ALL);
@@ -62,24 +65,30 @@ export default function ScreenerPage() {
   const filteredRows = useMemo(() => {
     const pMin = parseFloat(priceMin), pMax = parseFloat(priceMax);
     const vMin = parseFloat(volMin), vMax = parseFloat(volMax);
+    const gMin = parseFloat(gainMin), gMax = parseFloat(gainMax);
     return rows.filter(r => {
       if (!Number.isNaN(pMin) && r.價格 < pMin) return false;
       if (!Number.isNaN(pMax) && r.價格 > pMax) return false;
       if (!Number.isNaN(vMin) && (r['量縮(%)'] == null || r['量縮(%)'] < vMin)) return false;
       if (!Number.isNaN(vMax) && (r['量縮(%)'] == null || r['量縮(%)'] > vMax)) return false;
+      if (!Number.isNaN(gMin) && r['漲幅(%)'] < gMin) return false;
+      if (!Number.isNaN(gMax) && r['漲幅(%)'] > gMax) return false;
       if (market !== ALL && r.市場 !== market) return false;
       if (industry !== ALL && r.族群 !== industry) return false;
       if (status !== ALL && r.扣低狀態 !== status) return false;
       return true;
     });
-  }, [rows, priceMin, priceMax, volMin, volMax, market, industry, status]);
+  }, [rows, priceMin, priceMax, volMin, volMax, gainMin, gainMax, market, industry, status]);
 
   const resetFilters = () => {
     setPriceMin(''); setPriceMax(''); setVolMin(''); setVolMax('');
+    setGainMin(''); setGainMax(DEFAULT_GAIN_MAX);
     setMarket(ALL); setIndustry(ALL); setStatus(ALL);
   };
 
-  const filtersActive = priceMin || priceMax || volMin || volMax || market !== ALL || industry !== ALL || status !== ALL;
+  const isDefaultFilterState = !priceMin && !priceMax && !volMin && !volMax && !gainMin
+    && gainMax === DEFAULT_GAIN_MAX && market === ALL && industry === ALL && status === ALL;
+  const filtersActive = !isDefaultFilterState || filteredRows.length !== rows.length;
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
@@ -124,7 +133,7 @@ export default function ScreenerPage() {
         ) : (
           <>
             <div className="bg-white border border-gray-100 rounded-xl shadow-sm p-4">
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
                 <div className="col-span-2 sm:col-span-1">
                   <label className="block text-[11px] text-gray-400 mb-1">股價</label>
                   <div className="flex items-center gap-1">
@@ -142,6 +151,16 @@ export default function ScreenerPage() {
                       placeholder="最低" className="w-full min-w-0 px-2 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400" />
                     <span className="text-gray-300">–</span>
                     <input type="number" value={volMax} onChange={e => setVolMax(e.target.value)}
+                      placeholder="最高" className="w-full min-w-0 px-2 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400" />
+                  </div>
+                </div>
+                <div className="col-span-2 sm:col-span-1">
+                  <label className="block text-[11px] text-gray-400 mb-1">漲幅 %</label>
+                  <div className="flex items-center gap-1">
+                    <input type="number" value={gainMin} onChange={e => setGainMin(e.target.value)}
+                      placeholder="最低" className="w-full min-w-0 px-2 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400" />
+                    <span className="text-gray-300">–</span>
+                    <input type="number" value={gainMax} onChange={e => setGainMax(e.target.value)}
                       placeholder="最高" className="w-full min-w-0 px-2 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400" />
                   </div>
                 </div>
