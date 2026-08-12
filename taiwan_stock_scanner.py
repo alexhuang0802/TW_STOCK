@@ -19,6 +19,9 @@ import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
+
+TW_TZ = ZoneInfo("Asia/Taipei")
 
 warnings.filterwarnings("ignore")
 
@@ -124,8 +127,8 @@ def _download_one(ticker: str, start: str, end: str):
 
 
 def download_all(stock_list: list[dict]) -> tuple[dict, dict]:
-    end   = (datetime.now() + timedelta(days=2)).strftime("%Y-%m-%d")
-    start = (datetime.now() - timedelta(days=HISTORY_DAYS)).strftime("%Y-%m-%d")
+    end   = (datetime.now(TW_TZ) + timedelta(days=2)).strftime("%Y-%m-%d")
+    start = (datetime.now(TW_TZ) - timedelta(days=HISTORY_DAYS)).strftime("%Y-%m-%d")
 
     suffix_map = {"TWSE": ".TW", "TPEX": ".TWO"}
     ticker_map = {
@@ -296,7 +299,7 @@ def main():
 
     print("\n" + "=" * 55)
 
-    now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+    now_str = datetime.now(TW_TZ).strftime("%Y-%m-%d %H:%M")
     RESULT_PATH.parent.mkdir(parents=True, exist_ok=True)
 
     if not results:

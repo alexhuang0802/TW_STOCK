@@ -47,6 +47,24 @@ export default function ScreenerPage() {
   const [industry, setIndustry] = useState(ALL);
   const [status, setStatus] = useState(ALL);
 
+  const [triggerState, setTriggerState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
+  const [triggerMsg, setTriggerMsg] = useState('');
+
+  const triggerScan = async () => {
+    setTriggerState('loading');
+    setTriggerMsg('');
+    try {
+      const res = await fetch('/api/trigger-scan', { method: 'POST' });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || `失敗（${res.status}）`);
+      setTriggerState('done');
+      setTriggerMsg('已觸發，約 1-2 分鐘後排程跑完會自動更新，屆時重新整理頁面即可');
+    } catch (e) {
+      setTriggerState('error');
+      setTriggerMsg(e instanceof Error ? e.message : '觸發失敗');
+    }
+  };
+
   useEffect(() => {
     fetch('/scan-results.json', { cache: 'no-store' })
       .then(res => {
@@ -112,13 +130,27 @@ export default function ScreenerPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <h1 className="text-lg font-bold">📊 台股篩選結果</h1>
-          {data && (
-            <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              最後更新：{data.updated_at}
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {data && (
+              <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                最後更新：{data.updated_at}
+              </span>
+            )}
+            <button
+              onClick={triggerScan}
+              disabled={triggerState === 'loading'}
+              className="text-xs px-2.5 py-1 rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-50 transition-colors whitespace-nowrap"
+            >
+              {triggerState === 'loading' ? '觸發中…' : '🔄 立即重新掃描'}
+            </button>
+          </div>
         </div>
+        {triggerMsg && (
+          <div className={`text-xs px-3 py-2 rounded-lg ${triggerState === 'error' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-700'}`}>
+            {triggerMsg}
+          </div>
+        )}
         <p className="text-xs text-gray-400">
           均線多頭排列＋即將扣低＋電子股・成交金額&gt;5000萬。
           <span className="ml-1 px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-semibold">🌟</span>
